@@ -1,11 +1,7 @@
-import { Russo_One, Open_Sans } from 'next/font/google';
+import { Inter, Russo_One } from 'next/font/google';
 import './globals.css';
 
-const openSans = Open_Sans({
-  subsets: ['latin'],
-  variable: '--font-opensans',
-});
-
+const inter = Inter({ subsets: ['latin'] });
 const russo = Russo_One({ 
   subsets: ['latin'],
   weight: '400',
@@ -19,8 +15,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${russo.variable} ${openSans.variable}`}>
-      <body className={`${openSans.className}`}>{children}</body>
+    <html lang="en" className={`${russo.variable}`}>
+      <body className={`${inter.className} bg-[#EDEFF1]`}>{children}</body>
     </html>
   );
 }
