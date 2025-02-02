@@ -13,7 +13,7 @@ const HeroSection = () => {
   return (
     <div className="relative">
       {/* Hero Section */}
-      <div className="relative h-screen w-full">
+      <div className="relative min-h-[110vh] w-full">
         {/* Background Image */}
         <div 
           className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
@@ -27,7 +27,7 @@ const HeroSection = () => {
 
         {/* Content */}
         <div className="relative h-full flex flex-col items-center justify-center px-4 md:px-6">
-          <div className="mb-12 md:mb-24 w-full max-w-7xl mt-20">
+          <div className="mb-12 md:mb-24 w-full max-w-7xl mt-48">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl font-russo text-white text-center leading-tight mb-6 md:mb-8 tracking-wide font-black">
               Explore the World's
               <span className="block mt-1 md:mt-2">
@@ -40,7 +40,7 @@ const HeroSection = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="w-full max-w-xl md:max-w-2xl md:backdrop-blur-md md:bg-white/10 rounded-full p-2 flex flex-col md:flex-row gap-3 font-opensans mx-4 mb-20">
+          <div className="w-full max-w-xl md:max-w-2xl md:backdrop-blur-md md:bg-white/10 rounded-full p-2 flex flex-col md:flex-row gap-3 font-opensans mx-4 mb-8 mt-8">
             {/* Place Input */}
             <div className="flex-1 min-w-0 flex items-center bg-white/20 rounded-full px-4 py-3">
               <FaMapMarkerAlt className="text-white text-lg md:text-xl flex-shrink-0 mr-3" />
