@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaSearch, FaRobot } from 'react-icons/fa';
 import StatsCard from './StatsCard';
 import Link from 'next/link';
-import Footer from './Footer';
 
 const HeroSection = () => {
   const [searchData, setSearchData] = useState({
@@ -242,7 +241,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </div>
   );
 };

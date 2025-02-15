@@ -1,5 +1,6 @@
 import { Inter, Russo_One } from 'next/font/google';
 import './globals.css';
+import FooterWrapper from './components/FooterWrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 const russo = Russo_One({ 
@@ -18,7 +19,7 @@ export default function RootLayout({ children }) {
     <html lang="en" className={`${russo.variable}`}>
       <body className={`${inter.className}`}>
         {children}
-        
+        <FooterWrapper />
       </body>
     </html>
   );
