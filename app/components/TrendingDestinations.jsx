@@ -19,7 +19,7 @@ const DestinationCard = ({ image, place, location, className }) => {
 
 const TrendingDestinations = () => {
   return (
-    <section className="py-20 px-4 md:px-6 mt-24 bg-[#EDEFF1]">
+    <section className="py-20 px-4 md:px-6 mt-[850px] md:mt-[850px] ">
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10">
