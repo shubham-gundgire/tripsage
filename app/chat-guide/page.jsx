@@ -167,7 +167,7 @@ export default function ChatGuide() {
       {/* Chat Messages */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto scrollbar-hide"
+        className="flex-1 overflow-y-auto scrollbar-hide pb-32"
       >
         <div className="max-w-6xl mx-auto">
           {messages.map((message, index) => (
@@ -199,7 +199,7 @@ export default function ChatGuide() {
       </div>
 
       {/* Chat Input */}
-      <div className="bg-white/80 backdrop-blur-lg border-t border-emerald-100">
+      <div className="bg-white/80 backdrop-blur-lg border-t border-emerald-100 fixed bottom-0 left-0 right-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 md:px-6">
           <form onSubmit={handleSubmit} className="relative">
             <input

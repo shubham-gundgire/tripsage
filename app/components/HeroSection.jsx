@@ -88,7 +88,7 @@ const HeroSection = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="absolute left-0 right-0 bottom-0 translate-y-[60%] px-4 md:px-6 bg-transparent">
+      <div className="absolute left-0 right-0 bottom-0 translate-y-[95%] md:translate-y-[70%] px-4 md:px-6 bg-transparent">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <StatsCard 
@@ -112,7 +112,7 @@ const HeroSection = () => {
       </div>
 
       {/* ChatGuide Banner */}
-      <div className="absolute left-0 right-0 bottom-0 translate-y-[calc(120%)] md:translate-y-[calc(110%)] px-4 md:px-6">
+      <div className="absolute left-0 right-0 bottom-0 translate-y-[calc(130%)] md:translate-y-[calc(110%)] px-4 md:px-6">
         <div className="max-w-6xl mx-auto my-32">
           <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-[#2B2E4A] to-[#1F1D36]">
             {/* Abstract Background Elements */}

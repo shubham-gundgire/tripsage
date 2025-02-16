@@ -17,7 +17,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${russo.variable}`}>
-      <body className={`${inter.className}`}>
+      <body className={`${inter.className} bg-white`}>
         {children}
         <FooterWrapper />
       </body>
