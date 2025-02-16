@@ -33,8 +33,14 @@ module.exports = {
       transitionDelay: {
         '2000': '2000ms',
         '4000': '4000ms',
-      }
+      },
+      fontFamily: {
+        sans: ['var(--font-inter)'],
+        russo: ['var(--font-russo)'],
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 } 

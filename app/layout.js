@@ -1,24 +1,19 @@
-import { Inter, Russo_One } from 'next/font/google';
 import './globals.css';
+import { inter, russo } from './fonts';
+import NavbarWrapper from './components/NavbarWrapper';
 import FooterWrapper from './components/FooterWrapper';
 
-const inter = Inter({ subsets: ['latin'] });
-const russo = Russo_One({ 
-  subsets: ['latin'],
-  weight: '400',
-  variable: '--font-russo',
-});
-
 export const metadata = {
-  title: 'TripSage - Your Travel Planning Companion',
-  description: 'Plan your perfect trip with TripSage - your intelligent travel planning companion.',
+  title: 'TripSage - Your Personal Travel Assistant',
+  description: 'Plan your perfect trip with TripSage. Get personalized travel recommendations, itineraries, and insights from our AI-powered travel assistant.',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${russo.variable}`}>
-      <body className={`${inter.className} bg-white`}>
-        {children}
+    <html lang="en">
+      <body className={inter.className}>
+        <NavbarWrapper />
+        <main>{children}</main>
         <FooterWrapper />
       </body>
     </html>

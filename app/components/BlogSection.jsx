@@ -1,6 +1,9 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import Link from 'next/link';
+import Image from 'next/image';
+import blogData from '../data/blogs.json';
 
 // Fixed color patterns for each card
 const cardPatterns = [
@@ -12,86 +15,51 @@ const cardPatterns = [
   'from-teal-400 to-cyan-500'
 ];
 
-const blogs = [
-  {
-    id: 1,
-    title: "Hidden Beaches of Bali",
-    category: "Beach Escapes",
-    date: "March 15, 2024",
-    pattern: cardPatterns[0],
-    excerpt: "Discover secluded paradises away from the tourist crowds"
-  },
-  {
-    id: 2,
-    title: "Cultural Wonders of Kyoto",
-    category: "Cultural Experience",
-    date: "March 18, 2024",
-    pattern: cardPatterns[1],
-    excerpt: "Exploring ancient temples and traditional gardens"
-  },
-  {
-    id: 3,
-    title: "Safari Adventures in Tanzania",
-    category: "Wildlife & Nature",
-    date: "March 20, 2024",
-    pattern: cardPatterns[2],
-    excerpt: "Witness the great migration in Serengeti"
-  },
-  {
-    id: 4,
-    title: "Hiking the Inca Trail",
-    category: "Adventure Travel",
-    date: "March 22, 2024",
-    pattern: cardPatterns[3],
-    excerpt: "A journey through ancient Incan civilization"
-  },
-  {
-    id: 5,
-    title: "Northern Lights in Iceland",
-    category: "Natural Wonders",
-    date: "March 25, 2024",
-    pattern: cardPatterns[4],
-    excerpt: "Chasing the aurora in the Land of Fire and Ice"
-  },
-  {
-    id: 6,
-    title: "Street Food Tour in Bangkok",
-    category: "Food & Culture",
-    date: "March 28, 2024",
-    pattern: cardPatterns[5],
-    excerpt: "A culinary journey through Thailand's capital"
-  }
-];
+const blogs = blogData.blogs.slice(0, 6).map((blog, index) => ({
+  ...blog,
+  pattern: cardPatterns[index % cardPatterns.length]
+}));
 
 const BlogCard = ({ blog, isCenter }) => {
   return (
-    <div className={`relative group transition-all duration-300 ${
-      isCenter ? 'scale-105 md:scale-110 z-10' : 'scale-100 hover:scale-105'
-    }`}>
-      <div className={`relative overflow-hidden rounded-2xl ${
-        isCenter ? 'h-[350px] md:h-[400px]' : 'h-[300px] md:h-[350px]'
-      } shadow-lg bg-gradient-to-br ${blog.pattern}`}>
-        {/* Abstract Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2)_0%,transparent_100%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)]" />
-          <div className="absolute w-full h-full bg-[repeating-linear-gradient(45deg,transparent,transparent_35px,rgba(255,255,255,0.1)_35px,rgba(255,255,255,0.1)_70px)]" />
-        </div>
-        
-        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white">
-          <span className="inline-block px-3 py-1 mb-2 md:mb-3 text-sm bg-white/20 backdrop-blur-sm rounded-full">
-            {blog.category}
-          </span>
-          <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">{blog.title}</h3>
-          <div className="flex justify-between items-center">
-            <span className="text-xs md:text-sm text-white/80">{blog.date}</span>
-            <button className="text-white hover:text-white/80 transition-colors text-sm md:text-base">
-              Read More →
-            </button>
+    <Link href={`/blogs/${blog.id}`}>
+      <div className={`relative group transition-all duration-300 ${
+        isCenter ? 'scale-105 md:scale-110 z-10' : 'scale-100 hover:scale-105'
+      }`}>
+        <div className={`relative overflow-hidden rounded-2xl ${
+          isCenter ? 'h-[350px] md:h-[400px]' : 'h-[300px] md:h-[350px]'
+        } shadow-lg`}>
+          {/* Background Image */}
+          <Image
+            src={blog.coverImage}
+            alt={blog.title}
+            fill
+            className="object-cover"
+          />
+          {/* Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/60" />
+          
+          <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 text-white">
+            <span className="inline-block px-3 py-1 mb-2 md:mb-3 text-sm bg-white/20 backdrop-blur-sm rounded-full">
+              {blog.category}
+            </span>
+            <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3">{blog.title}</h3>
+            <div className="flex justify-between items-center">
+              <span className="text-xs md:text-sm text-white/80">
+                {new Date(blog.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </span>
+              <span className="text-white hover:text-white/80 transition-colors text-sm md:text-base">
+                Read More →
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 

@@ -83,7 +83,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-400">
-          <p>©2023 Indotravi, All Rights Reserved</p>
+          <p>©2025 TripSage, All Rights Reserved</p>
         </div>
       </div>
     </footer>
