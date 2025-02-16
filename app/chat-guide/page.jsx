@@ -37,7 +37,7 @@ const ChatMessage = ({ message, isBot }) => (
         </div>
         <div className={`prose prose-sm max-w-none ${
           isBot 
-            ? 'prose-p:leading-relaxed prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-pre:shadow-md' 
+            ? 'prose-p:leading-relaxed prose-pre:bg-slate-800 prose-pre:text-slate-100 prose-pre:shadow-md text-black' 
             : 'text-white prose-p:leading-relaxed prose-pre:bg-teal-600 prose-pre:text-white prose-headings:text-white prose-a:text-white'
         }`}>
           {typeof message === 'string' ? (
@@ -210,7 +210,7 @@ export default function ChatGuide() {
               placeholder="Ask me anything about travel..."
               className="w-full px-4 py-3 pr-12 rounded-xl bg-emerald-50/50 border border-emerald-200 
                 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 outline-none transition-all 
-                placeholder:text-slate-400"
+                placeholder:text-slate-400 text-black"
               disabled={isLoading}
             />
             <button
