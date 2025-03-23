@@ -6,9 +6,9 @@ import { IoClose } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
-  { href: '/destinations', label: 'Destinations' },
   { href: '/blogs', label: 'Blogs' },
-  { href: '/places', label: 'Places' },
+  { href: '/about-us', label: 'About Us' },
+  { href: '/budget-tracker', label: 'Budget Tracker' },
   { href: '/chat-guide', label: 'ChatGuide' },
 ];
 
@@ -39,11 +39,11 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between md:justify-start gap-8">
+        <div className="flex items-center justify-between md:justify-center gap-8">
           {/* Logo */}
           <Link 
             href="/" 
-            className="relative group"
+            className="relative group md:absolute md:left-6"
             onMouseEnter={() => setActiveLink('/')}
           >
             <span className="text-2xl md:text-3xl font-russo tracking-wider font-black">
@@ -53,8 +53,7 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation - Centered */}
-          <div className="hidden md:flex items-center flex-1">
-            <div className="flex-1" />
+          <div className="hidden md:flex items-center justify-center flex-1">
             {/* Nav Links */}
             <div className="backdrop-blur-md bg-white/[0.07] rounded-full px-3 py-2 border border-white/[0.08]">
               <ul className="flex items-center gap-1">
@@ -78,16 +77,6 @@ const Navbar = () => {
                   </li>
                 ))}
               </ul>
-            </div>
-            <div className="flex-1" />
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3 font-medium">
-              <button className="px-4 py-2 text-sm text-gray-900 hover:text-gray-700 transition-colors">
-                Login
-              </button>
-              <button className="px-5 py-2 text-sm text-white bg-gray-900 rounded-full hover:bg-gray-800 transition-colors shadow-md">
-                Sign Up
-              </button>
             </div>
           </div>
 
@@ -151,20 +140,6 @@ const Navbar = () => {
                   </li>
                 ))}
               </ul>
-              <div className="flex flex-col gap-3 items-center">
-                <button 
-                  className="w-full max-w-xs px-4 py-3 text-gray-900 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors text-center"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Login
-                </button>
-                <button 
-                  className="w-full max-w-xs px-4 py-3 text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors text-center shadow-md"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Sign Up
-                </button>
-              </div>
             </div>
           </motion.div>
         )}

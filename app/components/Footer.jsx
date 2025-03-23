@@ -1,6 +1,7 @@
 'use client';
 import { FaFacebook, FaInstagram, FaYoutube } from 'react-icons/fa';
 import { FiMail } from 'react-icons/fi';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
@@ -13,8 +14,8 @@ const Footer = () => {
             <div>
               <h3 className="text-xl font-semibold mb-4">About</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact Us</a></li>
+                <li><Link href="/about-us" className="text-gray-400 hover:text-white transition-colors">About Us</Link></li>
+                <li><Link href="/contact-us" className="text-gray-400 hover:text-white transition-colors">Contact Us</Link></li>
               </ul>
             </div>
 
@@ -32,8 +33,8 @@ const Footer = () => {
             <div>
               <h3 className="text-xl font-semibold mb-4">FAQ</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terms & Conditions</a></li>
+                <li><Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms-conditions" className="text-gray-400 hover:text-white transition-colors">Terms & Conditions</Link></li>
               </ul>
             </div>
           </div>

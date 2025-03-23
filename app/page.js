@@ -3,6 +3,7 @@ import HeroSection from './components/HeroSection';
 import TrendingDestinations from './components/TrendingDestinations';
 import BlogSection from './components/BlogSection';
 import TestimonialsSection from './components/TestimonialsSection';
+import BudgetTrackerPromo from './components/BudgetTrackerPromo';
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <TrendingDestinations />
+      <BudgetTrackerPromo />
       <BlogSection />
       <TestimonialsSection />
     </main>

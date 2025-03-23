@@ -1,15 +1,125 @@
 'use client';
-import { useState } from 'react';
-import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaSearch, FaRobot } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaSearch, FaRobot, FaAngleDown } from 'react-icons/fa';
 import StatsCard from './StatsCard';
 import Link from 'next/link';
 
 const HeroSection = () => {
+  const router = useRouter();
   const [searchData, setSearchData] = useState({
     place: '',
-    date: '',
-    guests: ''
+    startDate: '',
+    endDate: '',
+    guests: '1'
   });
+  
+  const [activeField, setActiveField] = useState(null);
+  const [showDateDropdown, setShowDateDropdown] = useState(false);
+  const [showGuestDropdown, setShowGuestDropdown] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.date-dropdown-container') && !e.target.closest('.guest-dropdown-container')) {
+        setShowDateDropdown(false);
+        setShowGuestDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    
+    if (!searchData.place) return;
+    
+    const params = new URLSearchParams();
+    params.append('destination', searchData.place);
+    
+    if (searchData.startDate) {
+      params.append('startDate', searchData.startDate);
+    }
+    
+    if (searchData.endDate) {
+      params.append('endDate', searchData.endDate);
+    }
+    
+    params.append('guests', searchData.guests || '1');
+    
+    router.push(`/destination-details?${params.toString()}`);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const renderDateDisplay = () => {
+    if (!searchData.startDate && !searchData.endDate) return 'Select dates';
+    
+    return `${formatDate(searchData.startDate)} ${searchData.endDate ? '→ ' + formatDate(searchData.endDate) : ''}`;
+  };
+
+  const today = new Date();
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  
+  const generateDaysForMonth = (year, month) => {
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
+    
+    const days = [];
+    // Add empty cells for days before the 1st of the month
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      days.push({ day: '', date: null });
+    }
+    
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month, day);
+      days.push({
+        day,
+        date: date.toISOString().split('T')[0],
+        isToday: today.getDate() === day && today.getMonth() === month && today.getFullYear() === year
+      });
+    }
+    
+    return days;
+  };
+
+  const thisMonthDays = generateDaysForMonth(today.getFullYear(), today.getMonth());
+  const nextMonthDays = generateDaysForMonth(nextMonth.getFullYear(), nextMonth.getMonth());
+
+  const handleSelectDate = (dateString) => {
+    // If no dates selected yet, set as start date
+    if (!searchData.startDate) {
+      setSearchData({ ...searchData, startDate: dateString });
+      return;
+    }
+    
+    // If start date is already set but not end date
+    if (searchData.startDate && !searchData.endDate) {
+      // If clicked date is before start date, make it the new start date
+      if (dateString < searchData.startDate) {
+        setSearchData({ ...searchData, startDate: dateString });
+        return;
+      }
+      
+      // Otherwise set it as end date
+      setSearchData({ ...searchData, endDate: dateString });
+      setShowDateDropdown(false);
+      return;
+    }
+    
+    // If both dates are set, start over with new start date
+    setSearchData({ ...searchData, startDate: dateString, endDate: '' });
+  };
+
+  const weekdays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                      'July', 'August', 'September', 'October', 'November', 'December'];
 
   return (
     <div className="relative">
@@ -40,49 +150,200 @@ const HeroSection = () => {
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="w-full max-w-xl md:max-w-2xl md:backdrop-blur-md md:bg-white/10 rounded-full p-2 flex flex-col md:flex-row gap-3 font-opensans mx-4 mb-8 mt-8">
-            {/* Place Input */}
-            <div className="flex-1 min-w-0 flex items-center bg-white/20 rounded-full px-4 py-3">
-              <FaMapMarkerAlt className="text-white text-lg md:text-xl flex-shrink-0 mr-3" />
-              <input
-                type="text"
-                placeholder="Where to?"
-                className="w-full bg-transparent text-white placeholder-white/70 outline-none text-sm md:text-base"
-                value={searchData.place}
-                onChange={(e) => setSearchData({...searchData, place: e.target.value})}
-              />
-            </div>
+          {/* Search Bar - New Design */}
+          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 mt-4 mb-24">
+            <form onSubmit={handleSearch} className="relative bg-white/10 backdrop-blur-md rounded-2xl p-4 shadow-lg">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 align-middle">
+                {/* Destination Input */}
+                <div 
+                  className={`bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 transition-all duration-200 ${activeField === 'destination' ? 'ring-2 ring-white/50' : ''}`}
+                  onClick={() => setActiveField('destination')}
+                >
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/20">
+                      <FaMapMarkerAlt className="text-white" />
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-white/80 text-xs font-medium">Destination</p>
+                      <input
+                        type="text"
+                        placeholder="Where to?"
+                        className="w-full bg-transparent text-white placeholder-white/50 outline-none text-sm md:text-base"
+                        value={searchData.place}
+                        onChange={(e) => setSearchData({...searchData, place: e.target.value})}
+                        required
+                        onFocus={() => setActiveField('destination')}
+                        onBlur={() => setActiveField(null)}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-            {/* Date Input */}
-            <div className="flex-1 min-w-0 flex items-center bg-white/20 rounded-full px-4 py-3">
-              <FaCalendarAlt className="text-white text-lg md:text-xl flex-shrink-0 mr-3" />
-              <input
-                type="date"
-                className="w-full bg-transparent text-white placeholder-white/70 outline-none text-sm md:text-base [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute"
-                value={searchData.date}
-                onChange={(e) => setSearchData({...searchData, date: e.target.value})}
-              />
-            </div>
+                {/* Date Range Input */}
+                <div 
+                  className={`md:col-span-2 bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 transition-all duration-200 date-dropdown-container ${activeField === 'dates' ? 'ring-2 ring-white/50' : ''}`}
+                  onClick={() => {
+                    setActiveField('dates');
+                    setShowDateDropdown(true);
+                    setShowGuestDropdown(false);
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/20">
+                      <FaCalendarAlt className="text-white" />
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-white/80 text-xs font-medium">Dates</p>
+                      <div className="flex items-center justify-between">
+                        <div className="text-white cursor-pointer py-1">
+                          {renderDateDisplay()}
+                        </div>
+                        <FaAngleDown className={`text-white/80 transition-transform ${showDateDropdown ? 'rotate-180' : ''}`} />
+                      </div>
+                      
+                      {showDateDropdown && (
+                        <div className="absolute z-[100] mb-2 bg-white rounded-xl shadow-xl p-4 left-0 right-0 md:left-auto md:w-[600px] bottom-full">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Current Month */}
+                            <div>
+                              <div className="text-center font-medium mb-2 text-gray-700">
+                                {monthNames[today.getMonth()]} {today.getFullYear()}
+                              </div>
+                              <div className="grid grid-cols-7 gap-1 text-center">
+                                {weekdays.map(day => (
+                                  <div key={day} className="text-xs text-gray-500 font-medium py-1">{day}</div>
+                                ))}
+                                {thisMonthDays.map((day, index) => (
+                                  <div 
+                                    key={index}
+                                    className={`p-1 text-sm rounded-full flex items-center justify-center ${
+                                      !day.date ? '' :
+                                      day.date === searchData.startDate ? 'bg-indigo-600 text-white' :
+                                      day.date === searchData.endDate ? 'bg-purple-600 text-white' :
+                                      day.date > searchData.startDate && day.date < searchData.endDate ? 'bg-indigo-100 text-indigo-800' :
+                                      day.isToday ? 'border border-indigo-600 text-indigo-600' :
+                                      'hover:bg-gray-100 cursor-pointer'
+                                    } ${day.date && new Date(day.date) < today && !day.isToday ? 'text-gray-300 cursor-not-allowed' : ''}`}
+                                    onClick={() => day.date && (new Date(day.date) >= today || day.isToday) ? handleSelectDate(day.date) : null}
+                                  >
+                                    {day.day}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            {/* Next Month */}
+                            <div>
+                              <div className="text-center font-medium mb-2 text-gray-700">
+                                {monthNames[nextMonth.getMonth()]} {nextMonth.getFullYear()}
+                              </div>
+                              <div className="grid grid-cols-7 gap-1 text-center">
+                                {weekdays.map(day => (
+                                  <div key={day} className="text-xs text-gray-500 font-medium py-1">{day}</div>
+                                ))}
+                                {nextMonthDays.map((day, index) => (
+                                  <div 
+                                    key={index}
+                                    className={`p-1 text-sm rounded-full flex items-center justify-center ${
+                                      !day.date ? '' :
+                                      day.date === searchData.startDate ? 'bg-indigo-600 text-white' :
+                                      day.date === searchData.endDate ? 'bg-purple-600 text-white' :
+                                      day.date > searchData.startDate && day.date < searchData.endDate ? 'bg-indigo-100 text-indigo-800' :
+                                      day.isToday ? 'border border-indigo-600 text-indigo-600' :
+                                      'hover:bg-gray-100 cursor-pointer'
+                                    }`}
+                                    onClick={() => day.date ? handleSelectDate(day.date) : null}
+                                  >
+                                    {day.day}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between mt-4 pt-3 border-t border-gray-200">
+                            <button 
+                              type="button"
+                              className="text-gray-500 hover:text-indigo-600 text-sm font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSearchData({ ...searchData, startDate: '', endDate: '' });
+                              }}
+                            >
+                              Clear dates
+                            </button>
+                            <button 
+                              type="button"
+                              className="text-indigo-600 hover:text-indigo-800 text-sm font-medium" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowDateDropdown(false);
+                              }}
+                            >
+                              Apply
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            {/* Guests Input */}
-            <div className="flex-1 min-w-0 flex items-center bg-white/20 rounded-full px-4 py-3">
-              <FaUsers className="text-white text-lg md:text-xl flex-shrink-0 mr-3" />
-              <input
-                type="number"
-                placeholder="Guests"
-                min="1"
-                className="w-full bg-transparent text-white placeholder-white/70 outline-none text-sm md:text-base"
-                value={searchData.guests}
-                onChange={(e) => setSearchData({...searchData, guests: e.target.value})}
-              />
-            </div>
+                {/* Guests Input */}
+                <div 
+                  className={`relative bg-white/20 backdrop-blur-sm rounded-xl px-4 py-3 transition-all duration-200 guest-dropdown-container ${activeField === 'guests' ? 'ring-2 ring-white/50' : ''}`}
+                  onClick={() => {
+                    setActiveField('guests');
+                    setShowGuestDropdown(!showGuestDropdown);
+                    setShowDateDropdown(false);
+                  }}
+                >
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-white/20">
+                      <FaUsers className="text-white" />
+                    </div>
+                    <div className="ml-3 flex-1">
+                      <p className="text-white/80 text-xs font-medium">Guests</p>
+                      <div className="flex items-center justify-between">
+                        <div className="text-white cursor-pointer py-1">
+                          {searchData.guests} {parseInt(searchData.guests) === 1 ? 'Guest' : 'Guests'}
+                        </div>
+                        <FaAngleDown className={`text-white/80 transition-transform ${showGuestDropdown ? 'rotate-180' : ''}`} />
+                      </div>
+                      
+                      {showGuestDropdown && (
+                        <div className="absolute z-[100] mb-2 bg-white rounded-xl shadow-xl py-2 w-full bottom-full">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                            <div
+                              key={num}
+                              className={`px-4 py-2 cursor-pointer hover:bg-indigo-50 ${
+                                parseInt(searchData.guests) === num ? 'bg-indigo-50 text-indigo-600' : 'text-gray-700'
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSearchData({ ...searchData, guests: num.toString() });
+                                setShowGuestDropdown(false);
+                              }}
+                            >
+                              {num} {num === 1 ? 'Guest' : 'Guests'}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
 
-            {/* Search Button */}
-            <button className="w-full md:w-auto h-[50px] flex items-center justify-center bg-white rounded-full hover:bg-gray-100 transition-all transform hover:scale-105 px-6">
-              <FaSearch className="hidden md:block text-gray-900 text-xl" />
-              <span className="md:hidden text-gray-900 font-semibold">Search</span>
-            </button>
+                {/* Search Button - Now inline with other inputs */}
+                <button 
+                  type="submit"
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white h-[50px] md:h-auto rounded-xl px-6 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl transition-all"
+                >
+                  <FaSearch />
+                  <span className="hidden sm:inline">Search</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
