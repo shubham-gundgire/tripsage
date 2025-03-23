@@ -232,6 +232,15 @@ export async function POST(req) {
       section
     );
     
+    // Check if API key is available
+    if (!GEMINI_API_KEY) {
+      console.warn('GEMINI_API_KEY is not defined, using fallback response');
+      return NextResponse.json(
+        generateFallbackResponse(section, destination, startDate, endDate, guests),
+        { status: 200 }
+      );
+    }
+    
     // Request to the LLM API
     const requestBody = {
       system_instruction: {
@@ -323,7 +332,16 @@ const generateFallbackResponse = (section, destination, startDate, endDate, gues
       ],
       cultural: `${destination} has a rich cultural heritage with diverse traditions, festivals, and local customs that visitors can experience.`,
       weather: `The weather in ${destination} during your visit is expected to be pleasant and suitable for exploration and outdoor activities.`,
-      safety: `${destination} is generally considered safe for tourists, but always exercise normal precautions and be aware of your surroundings.`
+      safety: `${destination} is generally considered safe for tourists, but always exercise normal precautions and be aware of your surroundings.`,
+      bestTime: "Spring and Fall",
+      language: "Local language",
+      currency: "Local currency",
+      timezone: "Local timezone",
+      relatedDestinations: [
+        { name: "Similar Destination 1", description: "A popular alternative with similar attractions" },
+        { name: "Similar Destination 2", description: "Another great option for travelers" },
+        { name: "Similar Destination 3", description: "Worth considering for your next trip" }
+      ]
     },
     accommodation: {
       options: [
@@ -357,6 +375,293 @@ const generateFallbackResponse = (section, destination, startDate, endDate, gues
             "Premium Resort - World-class amenities"
           ]
         }
+      ]
+    },
+    food: {
+      cuisine: `${destination} offers a diverse culinary scene with dishes that showcase local ingredients and traditional cooking methods.`,
+      dishes: [
+        "Local Specialty 1",
+        "Traditional Dish 2",
+        "Street Food Item 3",
+        "Famous Dessert 4",
+        "Signature Beverage 5"
+      ],
+      restaurants: [
+        {
+          name: "Local Favorite Restaurant",
+          type: "Traditional Cuisine",
+          description: "Authentic local dishes in a cozy atmosphere"
+        },
+        {
+          name: "Popular Café",
+          type: "Casual Dining",
+          description: "Great spot for breakfast and lunch"
+        },
+        {
+          name: "Fine Dining Establishment",
+          type: "Gourmet Experience",
+          description: "Elegant setting with innovative cuisine"
+        },
+        {
+          name: "Street Food Market",
+          type: "Casual & Authentic",
+          description: "Variety of local specialties at affordable prices"
+        }
+      ],
+      dietary: "Vegetarian and vegan options are increasingly available in restaurants throughout the area."
+    },
+    transportation: {
+      gettingThere: `You can reach ${destination} by air, with regular flights from major cities, or by land through well-connected road and rail networks.`,
+      nearestAirport: `${destination} International Airport`,
+      distance: {
+        "Major City 1": "250 km (2.5 hours by car)",
+        "Major City 2": "500 km (1 hour by plane)",
+        "Major City 3": "300 km (3 hours by train)"
+      },
+      localTransport: `In ${destination}, you can get around using public transportation, taxis, or rental services. The city has a well-developed transport system making it easy to explore.`,
+      transportOptions: [
+        "Subway/Metro",
+        "Bus Network",
+        "Taxi Services",
+        "Ride-sharing Apps",
+        "Bicycle Rentals",
+        "Walking (city center)"
+      ],
+      tips: [
+        "Purchase a transit card for discounted fares on public transportation",
+        "Download the local transit app for real-time updates",
+        "Taxis are readily available but negotiate the fare or ensure the meter is used",
+        "Rush hour traffic can be heavy, plan accordingly",
+        "Some areas are best explored on foot"
+      ]
+    },
+    events: {
+      events: [
+        {
+          name: "Annual Cultural Festival",
+          date: "Spring Season",
+          description: "Celebration of local culture with music, dance, and food"
+        },
+        {
+          name: "Food and Wine Festival",
+          date: "Fall Season",
+          description: "Showcasing local cuisine and beverages"
+        },
+        {
+          name: "Local Music Event",
+          date: "Summer Season",
+          description: "Live performances by local and international artists"
+        }
+      ],
+      activities: [
+        {
+          name: "Historical Walking Tour",
+          type: "Cultural",
+          description: "Guided tour of historical landmarks in the city center"
+        },
+        {
+          name: "Outdoor Adventure",
+          type: "Active",
+          description: "Hiking, biking, or water sports in the surrounding natural areas"
+        },
+        {
+          name: "Local Cooking Class",
+          type: "Culinary",
+          description: "Learn to prepare traditional local dishes with expert chefs"
+        },
+        {
+          name: "Relaxation Spa Day",
+          type: "Wellness",
+          description: "Traditional treatments and relaxation therapies"
+        }
+      ],
+      tours: [
+        "Full-day City Tour with Local Guide",
+        "Food Tasting Tour through Local Markets",
+        "Evening Cultural Performance and Dinner",
+        "Day Trip to Nearby Natural Attractions",
+        "Photography Tour of Scenic Viewpoints"
+      ]
+    },
+    budget: {
+      summary: `A trip to ${destination} can be adapted to various budgets. Costs will vary based on your accommodation choice, dining preferences, and selected activities.`,
+      totalCost: {
+        budget: "800",
+        midrange: "1500",
+        luxury: "3000"
+      },
+      breakdown: [
+        {
+          category: "Accommodation",
+          cost: {
+            budget: "300",
+            midrange: "700",
+            luxury: "1500"
+          }
+        },
+        {
+          category: "Food & Dining",
+          cost: {
+            budget: "200",
+            midrange: "400",
+            luxury: "700"
+          }
+        },
+        {
+          category: "Transportation",
+          cost: {
+            budget: "100",
+            midrange: "200",
+            luxury: "400"
+          }
+        },
+        {
+          category: "Activities & Tours",
+          cost: {
+            budget: "150",
+            midrange: "300",
+            luxury: "600"
+          }
+        },
+        {
+          category: "Shopping & Souvenirs",
+          cost: {
+            budget: "50",
+            midrange: "100",
+            luxury: "300"
+          }
+        }
+      ],
+      disclaimer: "Prices are approximate and may vary based on exchange rates, season, and personal preferences. It's recommended to budget extra for unexpected expenses or special experiences."
+    },
+    itinerary: {
+      intro: `This suggested itinerary for ${destination} combines popular attractions, cultural experiences, and time to relax and enjoy the local atmosphere.`,
+      days: [
+        {
+          title: "Exploring the City Center",
+          activities: [
+            {
+              time: "Morning",
+              title: "Breakfast & City Tour",
+              description: "Start with breakfast at a local café, then explore the main attractions in the city center"
+            },
+            {
+              time: "Afternoon",
+              title: "Lunch & Museum Visit",
+              description: "Sample local cuisine for lunch, then visit a prominent museum or gallery"
+            },
+            {
+              time: "Evening",
+              title: "Dinner & Entertainment",
+              description: "Enjoy dinner at a recommended restaurant followed by local entertainment"
+            }
+          ]
+        },
+        {
+          title: "Cultural Experiences",
+          activities: [
+            {
+              time: "Morning",
+              title: "Local Market Visit",
+              description: "Explore the vibrant local market and sample street food"
+            },
+            {
+              time: "Afternoon",
+              title: "Historical Sites Tour",
+              description: "Visit key historical landmarks and learn about local history"
+            },
+            {
+              time: "Evening",
+              title: "Cultural Dinner Experience",
+              description: "Participate in a traditional dinner with local entertainment"
+            }
+          ]
+        },
+        {
+          title: "Natural Surroundings",
+          activities: [
+            {
+              time: "Morning",
+              title: "Nature Excursion",
+              description: "Visit nearby natural attractions, parks, or gardens"
+            },
+            {
+              time: "Afternoon",
+              title: "Outdoor Activities",
+              description: "Participate in outdoor activities suitable for the location"
+            },
+            {
+              time: "Evening",
+              title: "Sunset Viewpoint & Dinner",
+              description: "Watch the sunset from a scenic viewpoint and enjoy dinner"
+            }
+          ]
+        }
+      ]
+    },
+    tips: {
+      bestTime: `The best time to visit ${destination} is during spring and fall when the weather is pleasant and tourist crowds are smaller.`,
+      currentSeason: "Currently in peak/off-peak season depending on your travel dates",
+      customs: `In ${destination}, respect for local customs is important. This includes appropriate dress in religious sites and awareness of local etiquette.`,
+      etiquetteTips: [
+        "Remove shoes when entering homes or certain religious sites",
+        "Dress modestly when visiting religious or traditional areas",
+        "Ask permission before taking photos of locals",
+        "Learn a few basic phrases in the local language",
+        "Be aware of appropriate tipping customs"
+      ],
+      language: {
+        overview: `The primary language in ${destination} is the local language, but English is often spoken in tourist areas and hotels.`,
+        phrases: [
+          "Hello/Greetings - Local Translation",
+          "Thank you - Local Translation",
+          "Please - Local Translation",
+          "Yes/No - Local Translation",
+          "Excuse me/Sorry - Local Translation",
+          "How much? - Local Translation"
+        ]
+      },
+      emergency: {
+        info: `In case of emergency in ${destination}, dial the local emergency number and contact your embassy if needed.`,
+        contacts: [
+          "Emergency Services: Local Emergency Number",
+          "Tourist Police: Local Police Number",
+          "Medical Emergencies: Local Hospital Number",
+          "Embassy Contact: Varies by nationality"
+        ]
+      }
+    },
+    shopping: {
+      overview: `${destination} offers diverse shopping experiences from modern malls to traditional markets, with opportunities to purchase local crafts, fashion, and specialty items.`,
+      shoppingAreas: [
+        {
+          name: "Main Shopping District",
+          type: "Retail Stores & Boutiques",
+          description: "Central shopping area with a mix of local and international brands"
+        },
+        {
+          name: "Traditional Market",
+          type: "Local Market",
+          description: "Authentic market experience with local products, crafts, and food"
+        },
+        {
+          name: "Modern Shopping Mall",
+          type: "Indoor Mall",
+          description: "Air-conditioned complex with shops, restaurants, and entertainment"
+        },
+        {
+          name: "Artisan Quarter",
+          type: "Craft Shops",
+          description: "Area known for local craftspeople and unique handmade items"
+        }
+      ],
+      souvenirs: [
+        "Local Handicrafts",
+        "Traditional Clothing Items",
+        "Local Food Products",
+        "Artisanal Jewelry",
+        "Local Art",
+        "Specialty Items Unique to the Region"
       ]
     }
   };

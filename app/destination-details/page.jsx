@@ -11,6 +11,9 @@ import { useRouter } from 'next/navigation';
 import SearchBar from '../components/SearchBar';
 import ErrorMessage from '../components/ErrorMessage';
 
+// Export a dynamic page configuration to disable static prerendering
+export const dynamic = 'force-dynamic';
+
 export default function DestinationDetails() {
   const searchParams = useSearchParams();
   const destination = searchParams.get('destination') || '';
