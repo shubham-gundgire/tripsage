@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { useAuth } from '../context/AuthContext';
 import { FaEnvelope, FaLock, FaUser } from 'react-icons/fa';
 
-export default function SignupPage() {
+export default function SignupPage() { 
+  console.log('SignupPage rendered');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
