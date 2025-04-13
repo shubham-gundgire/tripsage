@@ -2,6 +2,7 @@ import './globals.css';
 import { inter, russo } from './fonts';
 import NavbarWrapper from './components/NavbarWrapper';
 import FooterWrapper from './components/FooterWrapper';
+import { AuthProvider } from './context/AuthContext';
 
 export const metadata = {
   title: 'TripSage - Your Personal Travel Assistant',
@@ -12,9 +13,11 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${inter.className} bg-white`}>
-        <NavbarWrapper />
-        <main>{children}</main>
-        <FooterWrapper />
+        <AuthProvider>
+          <NavbarWrapper />
+          <main>{children}</main>
+          <FooterWrapper />
+        </AuthProvider>
       </body>
     </html>
   );
