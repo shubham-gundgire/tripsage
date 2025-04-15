@@ -67,12 +67,12 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
   };
 
   return (
-    <form onSubmit={handleSearch} className={`w-full ${className}`}>
-      <div className="relative bg-white rounded-xl shadow-lg overflow-hidden transition-all border border-gray-100">
+    <form onSubmit={handleSearch} className={`w-full relative overflow-visible ${className}`}>
+      <div className="relative bg-white rounded-xl shadow-lg overflow-visible border border-gray-100">
         <div className="grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-gray-100">
           {/* Destination Input */}
           <div 
-            className={`md:col-span-5 px-5 py-4 hover:bg-indigo-50/30 transition-colors ${activeField === 'destination' ? 'bg-indigo-50/40' : ''}`}
+            className={`md:col-span-5 px-5 py-4 ${activeField === 'destination' ? 'bg-indigo-50/40' : ''}`}
             onClick={() => setActiveField('destination')}
           >
             <div className="flex items-center h-full">
@@ -97,7 +97,7 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
           
           {/* Date Range Input */}
           <div 
-            className={`md:col-span-4 px-5 py-4 hover:bg-indigo-50/30 transition-colors cursor-pointer date-picker-container ${activeField === 'dates' ? 'bg-indigo-50/40' : ''}`}
+            className={`md:col-span-4 px-5 py-4 cursor-pointer date-picker-container ${activeField === 'dates' ? 'bg-indigo-50/40' : ''}`}
             onClick={() => {
               setActiveField('dates');
               setShowDatePicker(true);
@@ -117,7 +117,17 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
                   </div>
                   
                   {showDatePicker && (
-                    <div className="absolute bottom-full left-0 mb-2 z-50 bg-white rounded-lg shadow-xl p-2 border border-gray-100">
+                    <div className="absolute top-full left-0 mt-2 z-[9999] bg-white rounded-lg shadow-xl p-2 border border-gray-100" style={{ width: '600px' }}>
+                      <style jsx global>{`
+                        .react-datepicker {
+                          display: flex !important;
+                          width: 100% !important;
+                        }
+                        .react-datepicker__month-container {
+                          width: 50% !important;
+                          max-width: 290px !important;
+                        }
+                      `}</style>
                       <DatePicker
                         selected={startDate}
                         onChange={handleDateChange}
@@ -127,7 +137,7 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
                         inline
                         minDate={new Date()}
                         monthsShown={2}
-                        calendarClassName="bg-white text-indigo-800"
+                        calendarClassName="side-by-side-calendar bg-white text-indigo-800"
                       />
                     </div>
                   )}
@@ -138,7 +148,7 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
           
           {/* Guests Input */}
           <div 
-            className={`md:col-span-3 px-5 py-4 relative hover:bg-indigo-50/30 transition-colors guest-dropdown-container ${activeField === 'guests' ? 'bg-indigo-50/40' : ''}`}
+            className={`md:col-span-3 px-5 py-4 relative guest-dropdown-container ${activeField === 'guests' ? 'bg-indigo-50/40' : ''}`}
             onClick={() => {
               setActiveField('guests');
               setShowGuestDropdown(!showGuestDropdown);
@@ -158,12 +168,12 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
                   </div>
                   
                   {showGuestDropdown && (
-                    <div className="absolute bottom-full left-0 right-0 mb-2 z-50 bg-white rounded-lg shadow-xl py-2 border border-gray-100">
+                    <div className="absolute top-full left-0 right-0 mt-2 z-[9999] bg-white rounded-lg shadow-xl py-2 border border-gray-100">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                         <div 
                           key={num} 
-                          className={`px-4 py-2 cursor-pointer hover:bg-indigo-50 transition-colors ${
-                            parseInt(guests) === num ? 'bg-indigo-50 text-indigo-600 font-medium' : ''
+                          className={`px-4 py-2 cursor-pointer ${
+                            parseInt(guests) === num ? 'bg-indigo-50 text-indigo-600 font-medium' : 'hover:text-indigo-600'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -185,7 +195,7 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
         {/* Search Button - For Mobile View */}
         <button
           type="submit"
-          className="md:hidden w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+          className="md:hidden w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium transition-shadow duration-300 flex items-center justify-center gap-2"
         >
           <FaSearch />
           <span>Search</span>
@@ -194,7 +204,7 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
         {/* Search Button - For Desktop View */}
         <button
           type="submit"
-          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 items-center justify-center w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full hover:shadow-lg transition-all transform hover:scale-105 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 items-center justify-center w-14 h-14 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
         >
           <FaSearch className="text-xl" />
         </button>

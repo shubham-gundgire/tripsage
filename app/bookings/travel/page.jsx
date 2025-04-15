@@ -103,6 +103,20 @@ export default function TravelPackagesPage() {
     // The useEffect will trigger the search based on state changes
   };
 
+  // Format price - Convert USD to INR
+  const formatPrice = (price) => {
+    // Convert USD to INR (1 USD ≈ 83 INR)
+    const inrPrice = price * 83? price * 83:10000;
+
+    // Format in INR with ₹ symbol
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(inrPrice);
+  };
+
   // If still checking authentication, show nothing
   if (loading || !isAuthenticated) {
     return null;
@@ -341,11 +355,11 @@ export default function TravelPackagesPage() {
                       <p className="text-xl font-bold text-purple-600">
                         {pkg.discounted_price ? (
                           <>
-                            <span className="text-sm text-gray-400 line-through mr-1">${pkg.price}</span>
-                            ${pkg.discounted_price}
+                            <span className="text-sm text-gray-400 line-through mr-1">{formatPrice(pkg.price)}</span>
+                            {formatPrice(pkg.discounted_price)}
                           </>
                         ) : (
-                          <>${pkg.price}</>
+                          <>{formatPrice(pkg.price)}</>
                         )}
                       </p>
                     </div>

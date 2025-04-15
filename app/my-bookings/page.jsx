@@ -76,11 +76,17 @@ export default function MyBookingsPage() {
   // Format price
   const formatPrice = (price) => {
     if (!price) return 'N/A';
-    return new Intl.NumberFormat('en-US', {
+    
+    // Convert USD to INR (1 USD ≈ 83 INR)
+    const inrPrice = price * 83;
+    
+    // Format in INR with ₹ symbol
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0
-    }).format(price);
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(inrPrice);
   };
   
   // Get status badge

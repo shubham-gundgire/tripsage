@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FaHotel, FaUtensils, FaPlane, FaMapMarkedAlt, FaMoneyBillWave, 
-  FaCalendarAlt, FaLightbulb, FaShoppingBag, FaStar, FaSpinner, FaUsers, FaClock, FaAngleUp } from 'react-icons/fa';
+  FaCalendarAlt, FaLightbulb, FaShoppingBag, FaStar, FaSpinner, FaUsers, FaClock, FaAngleUp, FaLeaf, FaCheck, FaExclamation } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -102,6 +102,9 @@ export default function DestinationDetailsContent() {
   // Load initial data on mount
   useEffect(() => {
     if (destination) {
+      // Reset all data when destination changes
+      setDestinationData({});
+      setActiveSection('overview');
       loadDestinationOverview();
     } else {
       setLoading(false);
@@ -113,14 +116,17 @@ export default function DestinationDetailsContent() {
     if (destination && activeSection && !destinationData[activeSection]) {
       loadSectionData(activeSection);
     }
-  }, [activeSection]);
+  }, [activeSection, destination, destinationData]);
 
   const loadDestinationOverview = async () => {
     setLoading(true);
     setError(null);
+    setSectionLoading({});
+    
     try {
       const result = await fetchSectionData('overview');
-      setDestinationData(prev => ({ ...prev, overview: result }));
+      // Replace entire state rather than merging
+      setDestinationData({ overview: result });
     } catch (err) {
       setError(`Failed to load destination information: ${err.message}`);
     } finally {
@@ -307,12 +313,1169 @@ export default function DestinationDetailsContent() {
           </div>
         );
 
-      // Other section case handlers...
-      // Note: The actual component has many more cases, which I've abbreviated
-      // for brevity in this answer
+      case 'tips':
+        return (
+          <div className="space-y-8">
+            {/* Best Time to Visit */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+              <h3 className="text-xl font-semibold mb-3 text-blue-700 flex items-center">
+                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <FaCalendarAlt className="text-blue-600 text-sm" />
+                </span>
+                Best Time to Visit
+              </h3>
+              <p className="text-gray-700">{sectionData.bestTime}</p>
+              
+              {sectionData.currentSeason && (
+                <div className="mt-4 p-4 bg-white/50 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">For your travel dates:</h4>
+                  <p className="text-gray-700">{sectionData.currentSeason}</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Local Customs */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-100">
+              <h3 className="text-xl font-semibold mb-3 text-purple-700 flex items-center">
+                <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-2">
+                  <FaUsers className="text-purple-600 text-sm" />
+                </span>
+                Local Customs
+              </h3>
+              <p className="text-gray-700">{sectionData.customs}</p>
+            </div>
+            
+            {/* Etiquette Tips */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100">
+              <h3 className="text-xl font-semibold mb-4 text-amber-700 flex items-center">
+                <span className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-2">
+                  <FaLightbulb className="text-amber-600 text-sm" />
+                </span>
+                Etiquette Tips
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {sectionData.etiquetteTips.map((tip, index) => (
+                  <div key={index} className="flex items-start p-3 rounded-lg bg-white hover:bg-amber-50/50 transition-colors">
+                    <span className="text-amber-500 mr-3 mt-0.5 bg-amber-50 rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
+                      {index + 1}
+                    </span>
+                    <span className="text-gray-700">{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Language Information */}
+            {sectionData.language && (
+              <div className="p-6 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100">
+                <h3 className="text-xl font-semibold mb-3 text-emerald-700 flex items-center">
+                  <span className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-2">
+                    <FaUsers className="text-emerald-600 text-sm" />
+                  </span>
+                  Language
+                </h3>
+                <p className="text-gray-700 mb-4">{sectionData.language.overview}</p>
+                
+                <h4 className="font-medium text-emerald-700 mb-3">Useful Phrases:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {sectionData.language.phrases.map((phrase, index) => (
+                    <div key={index} className="flex items-center p-3 rounded-lg bg-white hover:bg-emerald-50/50 transition-colors">
+                      <span className="text-emerald-500 mr-3 mt-0.5 bg-emerald-50 rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
+                        {index + 1}
+                      </span>
+                      <span className="text-gray-700 font-medium">{phrase}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Emergency Information */}
+            {sectionData.emergency && (
+              <div className="p-6 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-100">
+                <h3 className="text-xl font-semibold mb-3 text-red-700 flex items-center">
+                  <span className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-2">
+                    <span className="text-red-600 font-bold text-sm">!</span>
+                  </span>
+                  Emergency Information
+                </h3>
+                <p className="text-gray-700 mb-4">{sectionData.emergency.info}</p>
+                
+                <div className="bg-white/70 rounded-lg p-4">
+                  <h4 className="font-medium text-red-700 mb-3">Emergency Contacts:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {sectionData.emergency.contacts.map((contact, index) => (
+                      <div key={index} className="flex items-center p-2 rounded-md hover:bg-red-50/50 transition-colors">
+                        <span className="text-red-500 mr-2">•</span>
+                        <span className="text-gray-700 font-medium">{contact}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'shopping':
+        return (
+          <div className="space-y-8">
+            {/* Shopping Overview */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100">
+              <h3 className="text-xl font-semibold mb-3 text-indigo-700 flex items-center">
+                <span className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-2">
+                  <FaShoppingBag className="text-indigo-600 text-sm" />
+                </span>
+                Shopping Overview
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{sectionData.overview}</p>
+            </div>
+            
+            {/* Shopping Areas */}
+            <div>
+              <h3 className="text-xl font-semibold mb-6 text-indigo-700 flex items-center">
+                <span className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-2">
+                  <FaMapMarkedAlt className="text-indigo-600 text-sm" />
+                </span>
+                Shopping Areas
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {sectionData.shoppingAreas.map((area, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                  >
+                    <div className="h-32 bg-gradient-to-r from-indigo-400 to-purple-500 relative">
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <h4 className="text-white text-lg font-semibold px-4 text-center">{area.name}</h4>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium mb-3">
+                        {area.type}
+                      </div>
+                      <p className="text-gray-700">{area.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Souvenirs */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100">
+              <h3 className="text-xl font-semibold mb-4 text-amber-700 flex items-center">
+                <span className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-2">
+                  <FaShoppingBag className="text-amber-600 text-sm" />
+                </span>
+                Recommended Souvenirs
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {sectionData.souvenirs.map((item, index) => (
+                  <div key={index} className="flex items-start p-3 rounded-lg bg-white hover:bg-amber-50/50 transition-colors">
+                    <span className="text-amber-500 mr-3 mt-0.5 bg-amber-50 rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
+                      •
+                    </span>
+                    <span className="text-gray-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Shopping Tips */}
+            <div className="p-5 rounded-xl bg-blue-50 border border-blue-100">
+              <h3 className="text-lg font-semibold mb-3 text-blue-700">Shopping Tips</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span className="text-gray-700">Bargaining is expected in street markets and bazaars - start at 40-50% of the quoted price.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span className="text-gray-700">Carry cash for street markets as many vendors don't accept cards.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span className="text-gray-700">Ask for a receipt for valuable purchases, especially jewelry.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-blue-500 mr-2">•</span>
+                  <span className="text-gray-700">Be prepared for crowds, especially on weekends and holidays.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        );
+        
+      case 'itinerary':
+        return (
+          <div className="space-y-8">
+            {/* Itinerary Introduction */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+              <h3 className="text-xl font-semibold mb-3 text-blue-700 flex items-center">
+                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <FaCalendarAlt className="text-blue-600 text-sm" />
+                </span>
+                Your Personalized Itinerary
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{sectionData.intro}</p>
+            </div>
+            
+            {/* Daily Itinerary */}
+            <div className="space-y-8">
+              {sectionData.days.map((day, dayIndex) => (
+                <div key={dayIndex} className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  {/* Day Header */}
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 sm:p-5">
+                    <h3 className="text-white text-lg sm:text-xl font-semibold">{day.title}</h3>
+                  </div>
+                  
+                  {/* Day Activities */}
+                  <div className="relative">
+                    {/* Timeline */}
+                    <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-indigo-200 hidden sm:block"></div>
+                    
+                    <div className="py-2">
+                      {day.activities.map((activity, actIndex) => (
+                        <div 
+                          key={actIndex} 
+                          className={`relative p-4 sm:pl-16 ${
+                            actIndex !== day.activities.length - 1 ? 'border-b border-gray-100' : ''
+                          }`}
+                        >
+                          {/* Timeline Dot */}
+                          <div className="absolute left-6 top-6 w-5 h-5 rounded-full bg-indigo-100 border-2 border-indigo-400 hidden sm:block"></div>
+                          
+                          {/* Time */}
+                          <div className="text-indigo-500 font-medium mb-1 sm:mb-0 sm:absolute sm:left-16 sm:top-4 text-sm">
+                            {activity.time}
+                          </div>
+                          
+                          {/* Activity Content */}
+                          <div className="sm:pt-5">
+                            <h4 className="text-gray-900 font-medium mb-2">{activity.title}</h4>
+                            <p className="text-gray-700 text-sm">{activity.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Travel Tips */}
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-100">
+              <h3 className="text-lg font-semibold mb-3 text-amber-700">Travel Tips for Your Itinerary</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Consider the weather during your travel dates when planning daily activities.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Download maps or use a navigation app for efficient travel between attractions.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Book popular attractions and day trips in advance to avoid disappointment.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Allow flexibility in your schedule for unexpected discoveries or weather changes.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        );
+        
+      case 'budget':
+        // Convert USD to INR (1 USD ≈ 83 INR)
+        const exchangeRate = 83;
+        
+        // Check if the budget has different tiers
+        const hasBudgetTiers = typeof sectionData.totalCost === 'object' && 
+          sectionData.totalCost !== null && sectionData.totalCost.budget;
+        
+        // Function to convert cost to INR based on value type
+        const convertCostToINR = (cost) => {
+          if (typeof cost === 'number') {
+            return (cost * exchangeRate).toLocaleString('en-IN');
+          } else if (typeof cost === 'string') {
+            return cost; // Return as is if it's a string (like "Variable")
+          } else if (typeof cost === 'object' && cost !== null) {
+            // Handle object with budget tiers
+            const result = {};
+            for (const tier in cost) {
+              if (typeof cost[tier] === 'number') {
+                result[tier] = (cost[tier] * exchangeRate).toLocaleString('en-IN');
+              } else {
+                result[tier] = cost[tier];
+              }
+            }
+            return result;
+          }
+          return 'Price not available';
+        };
+        
+        // Get total cost for each tier in INR
+        const totalCostINR = convertCostToINR(sectionData.totalCost);
+        
+        return (
+          <div className="space-y-8">
+            {/* Budget Summary */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
+              <h3 className="text-xl font-semibold mb-3 text-green-700 flex items-center">
+                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                  <FaMoneyBillWave className="text-green-600 text-sm" />
+                </span>
+                Budget Overview
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{sectionData.summary}</p>
+            </div>
+            
+            {/* Total Cost Cards */}
+            <div>
+              <h3 className="text-xl font-semibold mb-5 text-gray-800 flex items-center">
+                <span className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-2">
+                  <FaMoneyBillWave className="text-gray-600 text-sm" />
+                </span>
+                Total Estimated Cost
+              </h3>
+              
+              {hasBudgetTiers ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Budget Tier */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-600 p-5 text-white">
+                      <h3 className="text-xl font-semibold">Budget Option</h3>
+                      <p className="text-white/80 text-sm">basic & affordable</p>
+                    </div>
+                    <div className="p-5">
+                      <p className="text-xl font-bold text-gray-900">₹{totalCostINR.budget}</p>
+                      <p className="text-sm text-gray-500">${sectionData.totalCost.budget.toLocaleString()} USD</p>
+                    </div>
+                  </div>
+                  
+                  {/* Mid-range Tier */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-md transform scale-105 z-10">
+                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-5 text-white">
+                      <div className="flex justify-between items-center mb-1">
+                        <h3 className="text-xl font-semibold">Mid-range Option</h3>
+                        <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full backdrop-blur-sm">
+                          Recommended
+                        </span>
+                      </div>
+                      <p className="text-white/80 text-sm">balance of comfort & value</p>
+                    </div>
+                    <div className="p-5">
+                      <p className="text-xl font-bold text-gray-900">₹{totalCostINR.midrange}</p>
+                      <p className="text-sm text-gray-500">${sectionData.totalCost.midrange.toLocaleString()} USD</p>
+                    </div>
+                  </div>
+                  
+                  {/* Luxury Tier */}
+                  <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                    <div className="bg-gradient-to-r from-purple-500 to-fuchsia-600 p-5 text-white">
+                      <h3 className="text-xl font-semibold">Luxury Option</h3>
+                      <p className="text-white/80 text-sm">premium experience</p>
+                    </div>
+                    <div className="p-5">
+                      <p className="text-xl font-bold text-gray-900">₹{totalCostINR.luxury}</p>
+                      <p className="text-sm text-gray-500">${sectionData.totalCost.luxury.toLocaleString()} USD</p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                  <div className="bg-gradient-to-r from-green-600 to-teal-600 p-5 text-white">
+                    <h3 className="text-xl font-semibold">Total Estimated Cost</h3>
+                    <p className="text-white/80 text-sm">for your entire trip</p>
+                  </div>
+                  <div className="p-5 flex justify-between items-center">
+                    <div>
+                      <p className="text-xl font-bold text-gray-900">
+                        ₹{typeof totalCostINR === 'string' ? totalCostINR : totalCostINR.toLocaleString('en-IN')}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        ${typeof sectionData.totalCost === 'number' ? sectionData.totalCost.toLocaleString() : sectionData.totalCost} USD
+                      </p>
+                    </div>
+                    <div className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                      Standard estimate
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Cost Breakdown */}
+            <div>
+              <h3 className="text-xl font-semibold mb-5 text-gray-800 flex items-center">
+                <span className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-2">
+                  <FaMoneyBillWave className="text-gray-600 text-sm" />
+                </span>
+                Cost Breakdown
+              </h3>
+              
+              {/* Tabs for selecting budget tier */}
+              {hasBudgetTiers && (
+                <div className="mb-6 flex justify-center border-b border-gray-200">
+                  {['budget', 'midrange', 'luxury'].map((tier, index) => (
+                    <button
+                      key={tier}
+                      onClick={() => {}} // For future functionality if needed
+                      className={`px-6 py-3 font-medium text-sm capitalize ${
+                        index === 1 // Highlight midrange by default
+                          ? 'text-indigo-600 border-b-2 border-indigo-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      {tier}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                {sectionData.breakdown.map((item, index) => {
+                  // Check if cost is a tiered object or a simple value
+                  const isTieredCost = typeof item.cost === 'object' && item.cost !== null && !Array.isArray(item.cost);
+                  // Use midrange as the default tier to display
+                  const displayCost = isTieredCost ? item.cost.midrange : item.cost;
+                  // Convert to INR if it's a number
+                  const costInINR = typeof displayCost === 'number' 
+                    ? displayCost * exchangeRate 
+                    : null;
+                  
+                  // Calculate percentage for the progress bar (using midrange as default)
+                  const totalForPercentage = hasBudgetTiers 
+                    ? sectionData.totalCost.midrange 
+                    : (typeof sectionData.totalCost === 'number' ? sectionData.totalCost : 0);
+                  
+                  const percentage = typeof displayCost === 'number' && totalForPercentage 
+                    ? (displayCost / totalForPercentage) * 100 
+                    : 0;
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className="p-4 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-gray-800 font-medium">{item.category}</h4>
+                        
+                        {isTieredCost ? (
+                          <div className="bg-gray-100 rounded-lg p-2 grid grid-cols-3 gap-3 text-xs">
+                            {Object.entries(item.cost).map(([tier, tierCost]) => (
+                              <div key={tier} className="text-center">
+                                <p className="font-semibold text-gray-500 uppercase">{tier}</p>
+                                <p className="font-medium text-gray-900">
+                                  {typeof tierCost === 'number' 
+                                    ? `₹${(tierCost * exchangeRate).toLocaleString('en-IN')}` 
+                                    : tierCost}
+                                </p>
+                                {typeof tierCost === 'number' && (
+                                  <p className="text-gray-500">${tierCost.toLocaleString()}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-right">
+                            {costInINR !== null ? (
+                              <>
+                                <p className="text-lg font-semibold text-gray-900">₹{costInINR.toLocaleString('en-IN')}</p>
+                                <p className="text-xs text-gray-500">${displayCost} USD</p>
+                              </>
+                            ) : (
+                              <p className="text-sm text-gray-700">{displayCost}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {typeof displayCost === 'number' && (
+                        <div className="mt-3 w-full bg-gray-200 rounded-full h-2.5">
+                          <div 
+                            className="bg-gradient-to-r from-green-500 to-teal-500 h-2.5 rounded-full" 
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Disclaimer */}
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-100">
+              <h3 className="text-lg font-semibold mb-3 text-amber-700">Budget Disclaimer</h3>
+              <p className="text-gray-700 text-sm">{sectionData.disclaimer}</p>
+              
+              <div className="mt-4 bg-white p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Budget Saving Tips:</h4>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start">
+                    <span className="text-amber-500 mr-2">•</span>
+                    <span className="text-gray-600">Consider staying in budget accommodations or hostels to reduce costs.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-amber-500 mr-2">•</span>
+                    <span className="text-gray-600">Use public transportation instead of taxis when possible.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-amber-500 mr-2">•</span>
+                    <span className="text-gray-600">Eat at local street food vendors or inexpensive restaurants.</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-amber-500 mr-2">•</span>
+                    <span className="text-gray-600">Look for free or discounted attractions and activities.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            
+            {/* Exchange Rate Note */}
+            <div className="text-center text-sm text-gray-500 p-4 bg-gray-50 rounded-lg">
+              <p>Exchange rate: 1 USD = ₹{exchangeRate} INR (Approximate)</p>
+              <p className="mt-1">Prices may vary based on currency fluctuations and season.</p>
+            </div>
+          </div>
+        );
+        
+      case 'events':
+        return (
+          <div className="space-y-8">
+            {/* Events Section */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-100">
+              <h3 className="text-xl font-semibold mb-4 text-purple-700 flex items-center">
+                <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-2">
+                  <FaCalendarAlt className="text-purple-600 text-sm" />
+                </span>
+                Local Events
+              </h3>
+              
+              {sectionData.events.length > 0 ? (
+                <div className="space-y-4">
+                  {sectionData.events.map((event, index) => (
+                    <div key={index} className="bg-white rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-3">
+                        <h4 className="text-lg font-semibold text-purple-800">{event.name}</h4>
+                        <div className="text-center sm:text-right">
+                          <span className="inline-block px-4 py-1.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                            {event.date}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-gray-700">{event.description}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 italic">No specific events found for your travel dates. Check local listings closer to your trip.</p>
+              )}
+            </div>
+            
+            {/* Activities Section with Tabs */}
+            <div>
+              <h3 className="text-xl font-semibold mb-6 text-indigo-700 flex items-center">
+                <span className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-2">
+                  <FaMapMarkedAlt className="text-indigo-600 text-sm" />
+                </span>
+                Recommended Activities
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {sectionData.activities.map((activity, index) => {
+                  // Determine icon based on activity type
+                  let icon;
+                  let color;
+                  
+                  if (activity.type.toLowerCase().includes('cultural')) {
+                    icon = <FaStar className="text-amber-500" />;
+                    color = 'amber';
+                  } else if (activity.type.toLowerCase().includes('adventure')) {
+                    icon = <FaMapMarkedAlt className="text-green-500" />;
+                    color = 'green';
+                  } else {
+                    icon = <FaLightbulb className="text-blue-500" />;
+                    color = 'blue';
+                  }
+                  
+                  return (
+                    <div
+                      key={index}
+                      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 border border-gray-100"
+                    >
+                      <div className={`p-4 border-b border-gray-100 flex items-center justify-between`}>
+                        <div className="flex items-center">
+                          <span className={`w-8 h-8 rounded-full bg-${color}-100 flex items-center justify-center mr-3`}>
+                            {icon}
+                          </span>
+                          <h4 className="font-medium text-gray-900">{activity.name}</h4>
+                        </div>
+                        <span className={`px-3 py-1 rounded-full bg-${color}-50 text-${color}-700 text-xs font-medium`}>
+                          {activity.type}
+                        </span>
+                      </div>
+                      <div className="p-4 text-gray-700 text-sm">
+                        {activity.description}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Guided Tours Section */}
+            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-100">
+              <h3 className="text-xl font-semibold mb-4 text-indigo-700 flex items-center">
+                <span className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center mr-2">
+                  <FaUsers className="text-indigo-600 text-sm" />
+                </span>
+                Recommended Guided Tours
+              </h3>
+              
+              <div className="bg-white rounded-lg p-5 shadow-sm">
+                <div className="grid grid-cols-1 gap-3">
+                  {sectionData.tours.map((tour, index) => (
+                    <div key={index} className="flex items-start p-3 rounded-lg hover:bg-indigo-50/50 transition-colors">
+                      <div className="w-6 h-6 bg-indigo-100 rounded-full flex-shrink-0 flex items-center justify-center text-indigo-800 font-semibold text-sm mr-3 mt-0.5">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <p className="text-gray-800 font-medium">{tour}</p>
+                        <button className="mt-2 text-xs px-3 py-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full transition-colors">
+                          Inquire About Tour
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Planning Tip */}
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-100">
+              <h3 className="text-lg font-semibold mb-3 text-amber-700">Activity Planning Tips</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Book popular activities and tours in advance, especially during peak tourist season.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Consider the weather when planning outdoor activities - remember Mumbai can be hot and humid, with monsoon season from June to September.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Dress appropriately for cultural sites and religious venues - modest clothing that covers shoulders and knees is often required.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Always carry water, sunscreen, and comfortable walking shoes for day-long explorations.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        );
+        
+      case 'accommodation':
+        // Helper function to convert price ranges from USD to INR
+        const convertPriceRangeToINR = (priceRange) => {
+          // Extract numbers from string like "$30 - $70 per night"
+          const numbers = priceRange.match(/\d+/g);
+          if (!numbers || numbers.length < 2) return 'Price on request';
+          
+          // Convert to INR (1 USD ≈ 83 INR)
+          const exchangeRate = 83;
+          const lowerPrice = parseInt(numbers[0]) * exchangeRate;
+          const higherPrice = parseInt(numbers[1]) * exchangeRate;
+          
+          // Format with Indian numbering system
+          return `₹${lowerPrice.toLocaleString('en-IN')} - ₹${higherPrice.toLocaleString('en-IN')} per night`;
+        };
+        
+        return (
+          <div className="space-y-8">
+            {/* Accommodation Introduction */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+              <h3 className="text-xl font-semibold mb-3 text-blue-700 flex items-center">
+                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <FaHotel className="text-blue-600 text-sm" />
+                </span>
+                Accommodation Options
+              </h3>
+              <p className="text-gray-700">
+                We've curated the best accommodation options to suit various budgets and preferences.
+                All prices are approximate and may vary based on season, availability, and special offers.
+              </p>
+            </div>
+            
+            {/* Accommodation Options */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {sectionData.options.map((option, index) => {
+                // Determine card style based on accommodation type
+                let gradientColors, iconBg, iconColor;
+                
+                if (option.type.toLowerCase().includes('budget')) {
+                  gradientColors = 'from-emerald-500 to-teal-600';
+                  iconBg = 'bg-emerald-100';
+                  iconColor = 'text-emerald-600';
+                } else if (option.type.toLowerCase().includes('mid')) {
+                  gradientColors = 'from-blue-500 to-indigo-600';
+                  iconBg = 'bg-blue-100';
+                  iconColor = 'text-blue-600';
+                } else {
+                  gradientColors = 'from-purple-500 to-fuchsia-600';
+                  iconBg = 'bg-purple-100';
+                  iconColor = 'text-purple-600';
+                }
+                
+                // Convert price range to INR
+                const inrPriceRange = convertPriceRangeToINR(option.priceRange);
+                
+                return (
+                  <div 
+                    key={index} 
+                    className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-100"
+                  >
+                    {/* Header */}
+                    <div className={`p-5 bg-gradient-to-r ${gradientColors} text-white`}>
+                      <div className="flex items-center mb-3">
+                        <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center mr-3`}>
+                          <FaHotel className={`${iconColor}`} />
+                        </div>
+                        <h3 className="text-xl font-semibold">{option.type}</h3>
+                      </div>
+                      <div className="bg-white/20 rounded-lg px-4 py-2 backdrop-blur-sm">
+                        <p className="font-semibold">{inrPriceRange}</p>
+                        <p className="text-xs opacity-80">Original: {option.priceRange}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-5">
+                      <p className="text-gray-700 mb-4">{option.description}</p>
+                      
+                      <h4 className="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">Recommended Places</h4>
+                      <ul className="space-y-2">
+                        {option.recommendations.map((hotel, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <span className="text-blue-500 mr-2">•</span>
+                            <span className="text-gray-800">{hotel}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      <button className="w-full mt-5 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg hover:from-indigo-600 hover:to-purple-600 transition-all text-sm font-medium">
+                        View Booking Options
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* Accommodation Tips */}
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-100">
+              <h3 className="text-lg font-semibold mb-3 text-amber-700">Accommodation Tips</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Book accommodations well in advance for better rates, especially during peak tourist season.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Consider location relative to the attractions you plan to visit to minimize travel time.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Many hotels offer special packages that include meals or local experiences - ask about these when booking.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Read recent reviews to ensure the accommodation matches your expectations for cleanliness and service.</span>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Exchange Rate Note */}
+            <div className="text-center text-sm text-gray-500 p-4 bg-gray-50 rounded-lg">
+              <p>Exchange rate: 1 USD = ₹83 INR (Approximate)</p>
+              <p className="mt-1">Prices may vary based on currency fluctuations, season, and availability.</p>
+            </div>
+          </div>
+        );
+
+      case 'food':
+        return (
+          <div className="space-y-8">
+            {/* Cuisine Overview */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100">
+              <h3 className="text-xl font-semibold mb-3 text-amber-700 flex items-center">
+                <span className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center mr-2">
+                  <FaUtensils className="text-amber-600 text-sm" />
+                </span>
+                Local Cuisine
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{sectionData.cuisine}</p>
+            </div>
+            
+            {/* Must-Try Dishes */}
+            <div>
+              <h3 className="text-xl font-semibold mb-5 text-gray-800 flex items-center">
+                <span className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-2">
+                  <FaUtensils className="text-red-600 text-sm" />
+                </span>
+                Must-Try Dishes
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sectionData.dishes.map((dish, index) => {
+                  // Split the dish string into name and description
+                  const [name, description] = dish.split(':').map(part => part.trim());
+                  
+                  return (
+                    <div 
+                      key={index} 
+                      className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all transform hover:-translate-y-1 border border-gray-100"
+                    >
+                      <div className="h-32 bg-gradient-to-b from-orange-400 to-red-500 p-4 flex items-center justify-center relative">
+                        <div className="absolute inset-0 opacity-20" 
+                             style={{backgroundImage: `url(https://source.unsplash.com/300x200/?${encodeURIComponent(name)}+food+indian)`, backgroundSize: 'cover', backgroundPosition: 'center'}}></div>
+                        <h4 className="text-white text-lg font-semibold text-center relative z-10 drop-shadow-md">{name}</h4>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-gray-700">{description || "A local delicacy worth trying."}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Recommended Restaurants */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+              <h3 className="text-xl font-semibold mb-5 text-blue-700 flex items-center">
+                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <FaUtensils className="text-blue-600 text-sm" />
+                </span>
+                Recommended Restaurants
+              </h3>
+              
+              <div className="space-y-4">
+                {sectionData.restaurants.map((restaurant, index) => (
+                  <div 
+                    key={index} 
+                    className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all"
+                  >
+                    <div className="md:flex">
+                      <div className="md:w-1/4 p-4 border-r border-gray-100 flex flex-col justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+                        <h4 className="text-gray-900 font-semibold mb-1">{restaurant.name}</h4>
+                        <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
+                          {restaurant.type}
+                        </span>
+                      </div>
+                      <div className="md:w-3/4 p-4">
+                        <p className="text-gray-700">{restaurant.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Dietary Information */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
+              <h3 className="text-xl font-semibold mb-3 text-green-700 flex items-center">
+                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
+                  <FaLeaf className="text-green-600 text-sm" />
+                </span>
+                Dietary Information
+              </h3>
+              <p className="text-gray-700 leading-relaxed">{sectionData.dietary}</p>
+              
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                    <FaCheck className="text-green-600 text-xs" />
+                  </div>
+                  <span className="text-sm text-gray-700">Many vegetarian options</span>
+                </div>
+                <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-2">
+                    <FaLeaf className="text-green-600 text-xs" />
+                  </div>
+                  <span className="text-sm text-gray-700">Vegan dishes available</span>
+                </div>
+                <div className="bg-white/60 backdrop-blur-sm rounded-lg p-3 flex items-center">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center mr-2">
+                    <FaExclamation className="text-amber-600 text-xs" />
+                  </div>
+                  <span className="text-sm text-gray-700">Communicate allergies</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Food Tips */}
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-100">
+              <h3 className="text-lg font-semibold mb-3 text-amber-700">Food & Dining Tips</h3>
+              <ul className="space-y-2">
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Street food is delicious but choose vendors with good hygiene practices and high customer turnover.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Many restaurants offer "thali" - a platter with multiple dishes, perfect for sampling various flavors.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Popular restaurants may require reservations, especially during peak tourist season.</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="text-amber-500 mr-2">•</span>
+                  <span className="text-gray-700">Carry small denominations of cash for street food vendors who may not accept cards.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        );
+
+      case 'transportation':
+        // Helper function to parse markdown-like content
+        const parseMarkdownText = (text) => {
+          if (!text) return '';
+          
+          // Handle bullet points
+          let formattedText = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+          
+          // Handle line breaks
+          formattedText = formattedText.replace(/\n\n/g, '<br/><br/>');
+          
+          // Handle bullet lists
+          formattedText = formattedText.replace(/\n\* /g, '<br/>• ');
+          
+          return formattedText;
+        };
+        
+        return (
+          <div className="space-y-8">
+            {/* Getting There Section */}
+            <div className="p-6 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
+              <h3 className="text-xl font-semibold mb-3 text-blue-700 flex items-center">
+                <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                  <FaPlane className="text-blue-600 text-sm" />
+                </span>
+                Getting to {destination}
+              </h3>
+              <div 
+                className="text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: parseMarkdownText(sectionData.gettingThere) }}
+              />
+            </div>
+            
+            {/* Nearest Airport and Distances */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-5 text-white">
+                <h3 className="text-xl font-semibold flex items-center">
+                  <FaPlane className="mr-2" />
+                  Nearest Airport
+                </h3>
+                <p className="text-lg mt-2 font-medium">{sectionData.nearestAirport}</p>
+              </div>
+              
+              <div className="p-5">
+                <h4 className="text-md font-semibold text-gray-700 mb-3">Distances to Key Locations</h4>
+                <div className="space-y-2">
+                  {Object.entries(sectionData.distance).map(([place, distance], index) => (
+                    <div key={index} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                      <span className="text-gray-800 font-medium">{place}</span>
+                      <span className="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full">{distance}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Local Transport Options */}
+            <div>
+              <h3 className="text-xl font-semibold mb-5 text-gray-800 flex items-center">
+                <span className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center mr-2">
+                  <FaMapMarkedAlt className="text-emerald-600 text-sm" />
+                </span>
+                Local Transportation
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Local Transport Description */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-100">
+                  <div 
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: parseMarkdownText(sectionData.localTransport) }}
+                  />
+                </div>
+                
+                {/* Transport Options */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                  <h4 className="text-lg font-medium text-gray-800 mb-4">Available Transport Options</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {sectionData.transportOptions.map((option, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-center p-3 rounded-lg bg-gray-50 border border-gray-100 hover:bg-gray-100 transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0">
+                          {option.toLowerCase().includes('bus') && <FaMapMarkedAlt className="text-indigo-600 text-sm" />}
+                          {option.toLowerCase().includes('taxi') && <FaMapMarkedAlt className="text-indigo-600 text-sm" />}
+                          {option.toLowerCase().includes('auto') && <FaMapMarkedAlt className="text-indigo-600 text-sm" />}
+                          {option.toLowerCase().includes('car') && <FaMapMarkedAlt className="text-indigo-600 text-sm" />}
+                          {option.toLowerCase().includes('train') && <FaPlane className="text-indigo-600 text-sm" />}
+                          {option.toLowerCase().includes('ferr') && <FaMapMarkedAlt className="text-indigo-600 text-sm" />}
+                          {!option.toLowerCase().match(/(bus|taxi|auto|car|train|ferr)/) && <FaMapMarkedAlt className="text-indigo-600 text-sm" />}
+                        </div>
+                        <span className="text-gray-700">{option}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Travel Tips */}
+            <div className="p-5 rounded-xl bg-amber-50 border border-amber-100">
+              <h3 className="text-lg font-semibold mb-3 text-amber-700">Transportation Tips</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {sectionData.tips.map((tip, index) => (
+                  <div key={index} className="flex items-start p-3 rounded-lg bg-white hover:bg-amber-50/50 transition-colors">
+                    <span className="text-amber-500 mr-3 mt-0.5 bg-amber-50 rounded-full w-5 h-5 flex items-center justify-center text-xs shadow-sm">
+                      {index + 1}
+                    </span>
+                    <span className="text-gray-700">{tip}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
         
       default:
-        return <p>Select a section to view information</p>;
+        // Check if the section data exists and render it as JSON for now
+        return (
+          <div>
+            <h3 className="text-xl font-semibold mb-4 text-indigo-700">
+              {sections.find(s => s.id === section)?.title || 'Section Information'}
+            </h3>
+            <div className="space-y-6">
+              {Object.entries(sectionData).map(([key, value]) => {
+                // Skip rendering internal/metadata keys
+                if (key.startsWith('_')) return null;
+                
+                // Format the key title for display
+                const formattedTitle = key.charAt(0).toUpperCase() + 
+                  key.slice(1).replace(/([A-Z])/g, ' $1').trim();
+                
+                // Handle different types of content
+                if (Array.isArray(value)) {
+                  return (
+                    <div key={key} className="p-5 rounded-xl bg-white shadow-sm border border-gray-200">
+                      <h4 className="text-lg font-medium text-indigo-600 capitalize mb-3">{formattedTitle}</h4>
+                      
+                      {/* If array contains objects (like restaurants, hotels, events) */}
+                      {value.length > 0 && typeof value[0] === 'object' && value[0] !== null ? (
+                        <div className="space-y-4">
+                          {value.map((item, i) => (
+                            <div key={i} className="p-4 rounded-lg bg-gray-50 border border-gray-100">
+                              {Object.entries(item).map(([itemKey, itemValue]) => {
+                                // Format item key for display
+                                const formattedItemKey = itemKey.charAt(0).toUpperCase() + 
+                                  itemKey.slice(1).replace(/([A-Z])/g, ' $1').trim();
+                                
+                                return (
+                                  <div key={itemKey} className="mb-2">
+                                    <span className="text-sm font-medium text-gray-700">{formattedItemKey}: </span>
+                                    <span className="text-gray-600">
+                                      {typeof itemValue === 'string' 
+                                        ? itemValue 
+                                        : JSON.stringify(itemValue)}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        /* For arrays of strings */
+                        <ul className="list-disc pl-5 space-y-2">
+                          {value.map((item, i) => (
+                            <li key={i} className="text-gray-700">
+                              {typeof item === 'string' ? item : JSON.stringify(item)}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                } else if (typeof value === 'object' && value !== null) {
+                  return (
+                    <div key={key} className="p-5 rounded-xl bg-white shadow-sm border border-gray-200">
+                      <h4 className="text-lg font-medium text-indigo-600 capitalize mb-3">{formattedTitle}</h4>
+                      
+                      {/* Render nested properties */}
+                      <div className="space-y-3">
+                        {Object.entries(value).map(([nestedKey, nestedValue]) => {
+                          // Format nested key for display
+                          const formattedNestedKey = nestedKey.charAt(0).toUpperCase() + 
+                            nestedKey.slice(1).replace(/([A-Z])/g, ' $1').trim();
+                          
+                          // Check if nested value is an array
+                          if (Array.isArray(nestedValue)) {
+                            return (
+                              <div key={nestedKey} className="mb-4">
+                                <h5 className="text-base font-medium text-gray-700 mb-2">{formattedNestedKey}</h5>
+                                <ul className="list-disc pl-5 space-y-1">
+                                  {nestedValue.map((item, i) => (
+                                    <li key={i} className="text-gray-700">
+                                      {typeof item === 'string' ? item : JSON.stringify(item)}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div key={nestedKey} className="mb-2">
+                                <span className="text-sm font-medium text-gray-700">{formattedNestedKey}: </span>
+                                <span className="text-gray-600">
+                                  {typeof nestedValue === 'string' 
+                                    ? nestedValue 
+                                    : JSON.stringify(nestedValue)}
+                                </span>
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
+                    </div>
+                  );
+                } else {
+                  // For string, number, boolean values
+                  return (
+                    <div key={key} className="p-5 rounded-xl bg-white shadow-sm border border-gray-200">
+                      <h4 className="text-lg font-medium text-indigo-600 capitalize mb-2">{formattedTitle}</h4>
+                      <p className="text-gray-700">{String(value)}</p>
+                    </div>
+                  );
+                }
+              })}
+            </div>
+          </div>
+        );
     }
   };
 

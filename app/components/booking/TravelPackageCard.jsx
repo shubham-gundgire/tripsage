@@ -11,6 +11,22 @@ export default function TravelPackageCard({ travelPackage }) {
   const displayedIncludes = travelPackage.includes.slice(0, 3);
   const displayedExcludes = travelPackage.excludes.slice(0, 2);
   
+  // Format price - Convert USD to INR
+  const formatPrice = (price) => {
+    if (!price) return 'N/A';
+    
+    // Convert USD to INR (1 USD ≈ 83 INR)
+    const inrPrice = price * 83;
+    
+    // Format in INR with ₹ symbol
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(inrPrice);
+  };
+  
   // Handle click to navigate to travel package details
   const handleCardClick = () => {
     router.push(`/bookings/travel/${travelPackage.id}`);
@@ -84,7 +100,7 @@ export default function TravelPackageCard({ travelPackage }) {
         <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
           <div>
             <span className="text-gray-500 text-xs">Price per person</span>
-            <p className="text-xl font-bold text-purple-600">${travelPackage.price.toFixed(2)}</p>
+            <p className="text-xl font-bold text-purple-600">{formatPrice(travelPackage.price)}</p>
           </div>
           
           <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition-colors text-sm">

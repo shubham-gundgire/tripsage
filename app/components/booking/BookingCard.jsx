@@ -3,15 +3,29 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { FaHotel, FaPlane, FaCalendarAlt, FaUsers, FaCheck, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaHotel, FaPlane, FaCalendarAlt, FaUsers, FaCheck } from 'react-icons/fa';
 
 export default function BookingCard({ booking }) {
-  const [expanded, setExpanded] = useState(false);
-  
   // Format dates
   const formatDate = (dateString) => {
     if (!dateString) return '';
     return format(new Date(dateString), 'MMM dd, yyyy');
+  };
+  
+  // Format price - Convert USD to INR
+  const formatPrice = (price) => {
+    if (!price) return 'N/A';
+    
+    // Convert USD to INR (1 USD ≈ 83 INR)
+    const inrPrice = price * 83;
+    
+    // Format in INR with ₹ symbol
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(inrPrice);
   };
   
   // Get status color based on booking status
@@ -167,7 +181,7 @@ export default function BookingCard({ booking }) {
                 </div>
                 <div>
                   <p className="font-medium">Total Price</p>
-                  <p>${booking.total_price.toFixed(2)}</p>
+                  <p>{formatPrice(booking.total_price)}</p>
                 </div>
               </div>
             </div>
@@ -178,65 +192,6 @@ export default function BookingCard({ booking }) {
             </div>
           </div>
         </div>
-        
-        {/* Expandable Details */}
-        <button 
-          className="w-full flex items-center justify-center mt-4 pt-3 border-t border-gray-100 text-sm text-gray-600 focus:outline-none"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? (
-            <>
-              <span>Show Less</span>
-              <FaChevronUp className="ml-1" />
-            </>
-          ) : (
-            <>
-              <span>Show Details</span>
-              <FaChevronDown className="ml-1" />
-            </>
-          )}
-        </button>
-        
-        {expanded && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            {isHotelBooking ? (
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Room Details</h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  {bookingDetails.roomType}
-                </p>
-                
-                {booking.special_requests && (
-                  <div className="mb-3">
-                    <h4 className="text-sm font-medium text-gray-900 mb-1">Special Requests</h4>
-                    <p className="text-sm text-gray-600">{booking.special_requests}</p>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Package Details</h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  {booking.travel_packages?.description || 'Complete travel package'}
-                </p>
-                
-                {booking.travel_packages?.includes && (
-                  <div className="mb-3">
-                    <h4 className="text-sm font-medium text-gray-900 mb-1">Includes</h4>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                      {booking.travel_packages.includes.slice(0, 4).map((item, index) => (
-                        <li key={index} className="text-xs text-gray-600 flex items-start">
-                          <FaCheck className="text-green-500 mt-0.5 mr-1 flex-shrink-0" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

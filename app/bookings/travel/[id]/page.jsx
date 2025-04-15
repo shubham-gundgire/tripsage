@@ -238,6 +238,20 @@ export default function TravelPackageDetailPage({ params }) {
     return format(date, 'yyyy-MM-dd');
   };
 
+  // Format price - Convert USD to INR
+  const formatPrice = (price) => {
+    // Convert USD to INR (1 USD ≈ 83 INR)
+    const inrPrice = price * 83;
+    
+    // Format in INR with ₹ symbol
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(inrPrice);
+  };
+
   // Get tomorrow's date for min travel date
   const tomorrow = formatDateForInput(addDays(new Date(), 1));
 
@@ -529,15 +543,15 @@ export default function TravelPackageDetailPage({ params }) {
                   {travelPackage.discounted_price ? (
                     <div>
                       <span className="text-sm text-gray-500 line-through mr-2">
-                        ${travelPackage.price}
+                        {formatPrice(travelPackage.price)}
                       </span>
                       <span className="text-2xl font-bold text-purple-600">
-                        ${travelPackage.discounted_price}
+                        {formatPrice(travelPackage.discounted_price)}
                       </span>
                     </div>
                   ) : (
                     <span className="text-2xl font-bold text-purple-600">
-                      ${travelPackage.price}
+                      {formatPrice(travelPackage.price)}
                     </span>
                   )}
                   <span className="text-gray-600 text-sm"> / per person</span>
@@ -641,7 +655,7 @@ export default function TravelPackageDetailPage({ params }) {
                 <div className="border-t pt-4 mb-6">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Total Price:</span>
-                    <span className="text-xl font-bold text-purple-600">${totalPrice.toFixed(2)}</span>
+                    <span className="text-xl font-bold text-purple-600">{formatPrice(totalPrice)}</span>
                   </div>
                   <p className="text-xs text-gray-500 mb-4">
                     Price includes all listed services. A 20% deposit may be required to secure your booking.

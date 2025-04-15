@@ -21,6 +21,22 @@ export default function HotelCard({ hotel }) {
   // Display only first 4 amenities to avoid overcrowding
   const displayedAmenities = hotel.amenities.slice(0, 4);
   
+  // Format price - Convert USD to INR
+  const formatPrice = (price) => {
+    if (!price) return 'N/A';
+    
+    // Convert USD to INR (1 USD ≈ 83 INR)
+    const inrPrice = price * 83;
+    
+    // Format in INR with ₹ symbol
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(inrPrice);
+  };
+  
   // Handle click to navigate to hotel details
   const handleCardClick = () => {
     router.push(`/bookings/hotel/${hotel.id}`);
@@ -75,7 +91,7 @@ export default function HotelCard({ hotel }) {
         <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
           <div>
             <span className="text-gray-500 text-xs">From</span>
-            <p className="text-xl font-bold text-indigo-600">${hotel.price_per_night.toFixed(2)}</p>
+            <p className="text-xl font-bold text-indigo-600">{formatPrice(hotel.price_per_night)}</p>
             <span className="text-gray-500 text-xs">per night</span>
           </div>
           
