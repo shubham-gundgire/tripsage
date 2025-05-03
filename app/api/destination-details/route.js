@@ -167,10 +167,15 @@ const generatePrompt = (destination, startDate, endDate, guests, section) => {
 const calculateDuration = (startDate, endDate) => {
   if (!startDate || !endDate) return null;
   
+  // Create date objects from the date strings
   const start = new Date(startDate);
   const end = new Date(endDate);
-  const diffTime = Math.abs(end - start);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Calculate difference in days without time component
+  const startMs = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+  const endMs = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+  
+  const diffDays = Math.ceil((endMs - startMs) / (1000 * 60 * 60 * 24));
   
   return diffDays;
 };

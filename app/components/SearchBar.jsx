@@ -37,11 +37,15 @@ export default function SearchBar({ className = '', defaultValues = {} }) {
     params.append('destination', destination);
     
     if (startDate) {
-      params.append('startDate', startDate.toISOString().split('T')[0]);
+      const adjustedStartDate = new Date(startDate);
+      adjustedStartDate.setDate(adjustedStartDate.getDate());
+      params.append('startDate', adjustedStartDate.toISOString().split('T')[0]);
     }
     
     if (endDate) {
-      params.append('endDate', endDate.toISOString().split('T')[0]);
+      const adjustedEndDate = new Date(endDate);
+      adjustedEndDate.setDate(adjustedEndDate.getDate());
+      params.append('endDate', adjustedEndDate.toISOString().split('T')[0]);
     }
     
     params.append('guests', guests);

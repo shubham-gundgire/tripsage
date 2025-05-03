@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { authenticateRequest } from '@/app/lib/auth';
 import supabase from '@/app/lib/supabase';
+import { sendTravelBookingConfirmation } from '@/app/lib/emailService';
 
 export async function POST(request) {
   try {
@@ -12,6 +13,8 @@ export async function POST(request) {
 
     // Get user ID from authenticated request
     const userId = auth.user.userId;
+    const userEmail = auth.user.email; // Get user email for sending confirmation
+    const userName = auth.user.name || auth.user.email.split('@')[0]; // Use name or first part of email
     
     // Parse the request body
     const bookingData = await request.json();
@@ -62,6 +65,18 @@ export async function POST(request) {
         { error: 'Failed to create booking: ' + error.message },
         { status: 500 }
       );
+    }
+
+    // Send confirmation email
+    try {
+      await sendTravelBookingConfirmation(userEmail, userName, {
+        ...data[0],
+        travel_details: travelDetails // Pass the parsed travel details
+      });
+      console.log('Travel booking confirmation email sent successfully');
+    } catch (emailError) {
+      console.error('Error sending confirmation email:', emailError);
+      // Continue with success response even if email fails
     }
     
     return NextResponse.json({

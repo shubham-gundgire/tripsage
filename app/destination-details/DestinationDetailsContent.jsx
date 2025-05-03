@@ -92,10 +92,16 @@ export default function DestinationDetailsContent() {
   // Calculate trip duration
   const getDuration = () => {
     if (!startDate || !endDate) return 'N/A';
+    
+    // Create date objects and adjust for potential timezone issues
     const start = new Date(startDate);
     const end = new Date(endDate);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Calculate difference in days without time component
+    const startMs = Date.UTC(start.getFullYear(), start.getMonth(), start.getDate());
+    const endMs = Date.UTC(end.getFullYear(), end.getMonth(), end.getDate());
+    
+    const diffDays = Math.ceil((endMs - startMs) / (1000 * 60 * 60 * 24));
     return diffDays + ' day' + (diffDays > 1 ? 's' : '');
   };
 
@@ -1513,7 +1519,13 @@ export default function DestinationDetailsContent() {
                 {startDate && endDate && (
                   <div className="flex items-center bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
                     <FaCalendarAlt className="mr-2" />
-                    <span>{new Date(startDate).toLocaleDateString()} - {new Date(endDate).toLocaleDateString()}</span>
+                    <span>
+                      {(() => {
+                        const startDateObj = new Date(startDate);
+                        const endDateObj = new Date(endDate);
+                        return `${startDateObj.toLocaleDateString()} - ${endDateObj.toLocaleDateString()}`;
+                      })()}
+                    </span>
                   </div>
                 )}
                 <div className="flex items-center bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">

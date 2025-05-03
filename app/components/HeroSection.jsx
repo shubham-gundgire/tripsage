@@ -39,11 +39,17 @@ const HeroSection = () => {
     params.append('destination', searchData.place);
     
     if (searchData.startDate) {
-      params.append('startDate', searchData.startDate);
+      // Ensure correct date is used (prevent timezone issues)
+      const adjustedStartDate = new Date(searchData.startDate);
+      adjustedStartDate.setDate(adjustedStartDate.getDate());
+      params.append('startDate', adjustedStartDate.toISOString().split('T')[0]);
     }
     
     if (searchData.endDate) {
-      params.append('endDate', searchData.endDate);
+      // Ensure correct date is used (prevent timezone issues)
+      const adjustedEndDate = new Date(searchData.endDate);
+      adjustedEndDate.setDate(adjustedEndDate.getDate());
+      params.append('endDate', adjustedEndDate.toISOString().split('T')[0]);
     }
     
     params.append('guests', searchData.guests || '1');
@@ -53,8 +59,12 @@ const HeroSection = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    
+    // Parse the date using UTC to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+    const date = new Date(Date.UTC(year, month - 1, day));
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
   };
 
   const renderDateDisplay = () => {
@@ -78,9 +88,11 @@ const HeroSection = () => {
     
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
+      // Use UTC date constructor to avoid timezone issues
+      const date = new Date(Date.UTC(year, month, day));
       days.push({
         day,
+        // Format as ISO string and take only the date part
         date: date.toISOString().split('T')[0],
         isToday: today.getDate() === day && today.getMonth() === month && today.getFullYear() === year
       });
@@ -93,6 +105,11 @@ const HeroSection = () => {
   const nextMonthDays = generateDaysForMonth(nextMonth.getFullYear(), nextMonth.getMonth());
 
   const handleSelectDate = (dateString) => {
+    // Validate date format (YYYY-MM-DD)
+    if (!dateString || !/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
+      return;
+    }
+    
     // If no dates selected yet, set as start date
     if (!searchData.startDate) {
       setSearchData({ ...searchData, startDate: dateString });
