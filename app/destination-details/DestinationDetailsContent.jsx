@@ -3,10 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FaHotel, FaUtensils, FaPlane, FaMapMarkedAlt, FaMoneyBillWave, 
-  FaCalendarAlt, FaLightbulb, FaShoppingBag, FaStar, FaSpinner, FaUsers, FaClock, FaAngleUp, FaLeaf, FaCheck, FaExclamation } from 'react-icons/fa';
+  FaCalendarAlt, FaLightbulb, FaShoppingBag, FaStar, FaSpinner, FaUsers, FaClock, FaAngleUp, FaLeaf, FaCheck, FaExclamation, FaShareAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, EmailShareButton,
+  FacebookIcon, TwitterIcon, WhatsappIcon, EmailIcon } from 'react-share';
 
 // Components
 import SearchBar from '../components/SearchBar';
@@ -1535,6 +1537,20 @@ export default function DestinationDetailsContent() {
                 <div className="flex items-center bg-white/20 backdrop-blur-md px-4 py-2 rounded-full">
                   <FaCalendarAlt className="mr-2" />
                   <span>{getDuration()}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FacebookShareButton url={typeof window !== 'undefined' ? window.location.href : ''} quote={`Check out my trip to ${destination}!`}>
+                    <FacebookIcon size={32} round />
+                  </FacebookShareButton>
+                  <TwitterShareButton url={typeof window !== 'undefined' ? window.location.href : ''} title={`Check out my trip to ${destination}!`}>
+                    <TwitterIcon size={32} round />
+                  </TwitterShareButton>
+                  <WhatsappShareButton url={typeof window !== 'undefined' ? window.location.href : ''} title={`Check out my trip to ${destination}!`}>
+                    <WhatsappIcon size={32} round />
+                  </WhatsappShareButton>
+                  <EmailShareButton url={typeof window !== 'undefined' ? window.location.href : ''} subject={`Trip to ${destination}`} body={`Check out my trip to ${destination}!`}>
+                    <EmailIcon size={32} round />
+                  </EmailShareButton>
                 </div>
               </motion.div>
             </div>
