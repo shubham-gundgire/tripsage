@@ -133,7 +133,7 @@ export async function sendHotelBookingConfirmation(toEmail, userName, bookingDet
           <p>Special Requests: ${bookingDetails.special_requests || 'None'}</p>
           
           <p style="text-align: center;">
-            <a href="https://tripsage.vercel.app/my-bookings" class="button">View Booking</a>
+            <a href="https://tripsage-eight.vercel.app/bookings/my-bookings" class="button">View Booking</a>
           </p>
           
           <div class="help-text">
@@ -291,7 +291,7 @@ export async function sendTravelBookingConfirmation(toEmail, userName, bookingDe
           <p>Special Requests: ${bookingDetails.special_requests || 'None'}</p>
           
           <p style="text-align: center;">
-            <a href="https://tripsage.vercel.app/my-bookings" class="button">View Booking</a>
+            <a href="https://tripsage-eight.vercel.app/bookings/my-bookings" class="button">View Booking</a>
           </p>
           
           <div class="help-text">
