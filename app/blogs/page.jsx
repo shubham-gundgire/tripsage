@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -57,7 +57,7 @@ const BlogCard = ({ blog }) => (
   </motion.div>
 );
 
-export default function BlogsPage() {
+function BlogsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [blogs, setBlogs] = useState([]);
@@ -251,22 +251,27 @@ export default function BlogsPage() {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                Previous
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
               </button>
               
-              {[...Array(pagination.totalPages)].map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => handlePageChange(index + 1)}
-                  className={`w-10 h-10 rounded-md ${
-                    pagination.page === index + 1
-                      ? 'bg-teal-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {index + 1}
-                </button>
-              ))}
+              {[...Array(pagination.totalPages)].map((_, index) => {
+                const pageNumber = index + 1;
+                return (
+                  <button
+                    key={pageNumber}
+                    onClick={() => handlePageChange(pageNumber)}
+                    className={`w-10 h-10 rounded-md ${
+                      pagination.page === pageNumber
+                        ? 'bg-teal-600 text-white'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
               
               <button
                 onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
@@ -277,12 +282,30 @@ export default function BlogsPage() {
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
-                Next
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
               </button>
             </div>
           </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function BlogsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-emerald-50 to-white">
+        <div className="text-center">
+          <div className="h-16 w-16 mx-auto mb-4 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+          <h2 className="text-xl font-medium text-gray-700">Loading blogs...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we fetch the latest content</p>
+        </div>
+      </div>
+    }>
+      <BlogsContent />
+    </Suspense>
   );
 } 

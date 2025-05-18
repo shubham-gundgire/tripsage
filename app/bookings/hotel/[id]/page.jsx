@@ -1,8 +1,7 @@
 'use client';
 
-import React from 'react';
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/app/context/AuthContext';
@@ -14,10 +13,9 @@ import { FaStar, FaMapMarkerAlt, FaCheck, FaWifi, FaSwimmingPool,
          FaCar, FaDumbbell, FaSpa, FaConciergeBell, FaCalendarAlt, 
          FaUsers, FaArrowLeft, FaInfo } from 'react-icons/fa';
 
-export default function HotelDetailPage({ params }) {
-  // Unwrap params using React.use()
-  const unwrappedParams = React.use(params);
-  const { id } = unwrappedParams;
+function HotelDetailContent() {
+  const params = useParams();
+  const { id } = params;
   
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -73,7 +71,7 @@ export default function HotelDetailPage({ params }) {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            id: unwrappedParams.id,
+            id: id,
             name: hotelName,
             location: hotelLocation
           })
@@ -104,14 +102,14 @@ export default function HotelDetailPage({ params }) {
       } finally {
         setIsLoading(false);
       }
-    }, [unwrappedParams, unwrappedParams.id, hotelName, hotelLocation]);
+    }, [id, hotelName, hotelLocation]);
     
   // Call fetchHotelDetails when component mounts
   useEffect(() => {
-    if (unwrappedParams.id && isAuthenticated) {
+    if (id && isAuthenticated) {
       fetchHotelDetails();
     }
-  }, [unwrappedParams, unwrappedParams.id, isAuthenticated, fetchHotelDetails]);
+  }, [id, isAuthenticated, fetchHotelDetails]);
   
   // Handle toast notifications
   useEffect(() => {
@@ -629,5 +627,21 @@ export default function HotelDetailPage({ params }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function HotelDetailPage({ params }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen pt-24 flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-16 w-16 mx-auto mb-4 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <h2 className="text-xl font-medium text-gray-700">Loading hotel details...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we fetch the information</p>
+        </div>
+      </div>
+    }>
+      <HotelDetailContent />
+    </Suspense>
   );
 } 

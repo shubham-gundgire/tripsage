@@ -1,11 +1,10 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { IoArrowBack } from 'react-icons/io5';
 import { FaEdit, FaTrash } from 'react-icons/fa';
-import { useRouter } from 'next/navigation';
-import { use } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 
 const ContentBlock = ({ block }) => {
   switch (block.type) {
@@ -61,26 +60,17 @@ const ContentBlock = ({ block }) => {
   }
 };
 
-export default function BlogPost({ params }) {
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params);
+function BlogPostContent() {
   const router = useRouter();
-  const [blogId, setBlogId] = useState('');
+  const params = useParams();
   const [blog, setBlog] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isAuthor, setIsAuthor] = useState(false);
   
-  // Initialize blogId from unwrapped params
   useEffect(() => {
-    if (unwrappedParams && unwrappedParams.id) {
-      setBlogId(unwrappedParams.id);
-    }
-  }, [unwrappedParams]);
-  
-  useEffect(() => {
-    // Only proceed if blogId is available
-    if (!blogId) return;
+    // Only proceed if params.id is available
+    if (!params.id) return;
     
     const fetchBlog = async () => {
       setIsLoading(true);
@@ -92,7 +82,7 @@ export default function BlogPost({ params }) {
           headers['Authorization'] = `Bearer ${token}`;
         }
         
-        const response = await fetch(`/api/blogs/${blogId}`, { headers });
+        const response = await fetch(`/api/blogs/${params.id}`, { headers });
         
         if (!response.ok) {
           throw new Error('Blog not found');
@@ -125,7 +115,7 @@ export default function BlogPost({ params }) {
     
     fetchBlog();
     window.scrollTo(0, 0);
-  }, [blogId]);
+  }, [params.id]);
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this blog?')) {
@@ -140,7 +130,7 @@ export default function BlogPost({ params }) {
         return;
       }
       
-      const response = await fetch(`/api/blogs/${blogId}`, {
+      const response = await fetch(`/api/blogs/${params.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -293,5 +283,21 @@ export default function BlogPost({ params }) {
         </div>
       </motion.article>
     </div>
+  );
+}
+
+export default function BlogPost() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="h-16 w-16 mx-auto mb-4 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
+          <h2 className="text-xl font-medium text-gray-700">Loading blog...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we fetch the content</p>
+        </div>
+      </div>
+    }>
+      <BlogPostContent />
+    </Suspense>
   );
 } 

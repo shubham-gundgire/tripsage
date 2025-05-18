@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -8,7 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { FaStar, FaMapMarkerAlt, FaCalendarAlt, FaUsers, FaClock, FaCheck, FaTimes, FaAngleLeft, FaPlane, FaHotel, FaUmbrellaBeach } from 'react-icons/fa';
 import { format, addDays } from 'date-fns';
 
-export default function TravelPackageDetailPage({ params }) {
+function TravelPackageDetailContent({ params }) {
   const { id } = params;
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
@@ -683,5 +683,21 @@ export default function TravelPackageDetailPage({ params }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TravelPackageDetailPage({ params }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-white">
+        <div className="text-center">
+          <div className="h-16 w-16 mx-auto mb-4 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <h2 className="text-xl font-medium text-gray-700">Loading package details...</h2>
+          <p className="text-gray-500 mt-2">Please wait while we fetch the information</p>
+        </div>
+      </div>
+    }>
+      <TravelPackageDetailContent params={params} />
+    </Suspense>
   );
 } 
