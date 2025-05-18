@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { FaHotel, FaUtensils, FaPlane, FaMapMarkedAlt, FaMoneyBillWave, 
-  FaCalendarAlt, FaLightbulb, FaShoppingBag, FaStar, FaSpinner, FaUsers, FaClock, FaAngleUp, FaLeaf, FaCheck, FaExclamation, FaShareAlt } from 'react-icons/fa';
+  FaCalendarAlt, FaLightbulb, FaShoppingBag, FaStar, FaSpinner, FaUsers, FaClock, FaAngleUp, FaLeaf, FaCheck, FaExclamation, FaShareAlt, FaCopy, FaLink } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FacebookShareButton, TwitterShareButton, WhatsappShareButton, EmailShareButton,
-  FacebookIcon, TwitterIcon, WhatsappIcon, EmailIcon } from 'react-share';
+import { FacebookShareButton, TwitterShareButton, WhatsappShareButton,
+  FacebookIcon, TwitterIcon, WhatsappIcon } from 'react-share';
+import Modal from '../components/Modal';
 
 // Components
 import SearchBar from '../components/SearchBar';
@@ -26,6 +27,10 @@ export default function DestinationDetailsContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sectionLoading, setSectionLoading] = useState({});
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [tripSummary, setTripSummary] = useState(null);
+  const [summaryError, setSummaryError] = useState(null);
 
   const router = useRouter();
   const contentRef = useRef(null);
@@ -216,6 +221,48 @@ export default function DestinationDetailsContent() {
         contentRef.current.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
+  };
+  
+  // Generate a shareable trip summary
+  const generateTripSummary = async () => {
+    try {
+      setGeneratingSummary(true);
+      setSummaryError(null);
+      
+      const response = await fetch('/api/trip-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          destination,
+          startDate,
+          endDate,
+          guests: parseInt(guests, 10),
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API returned ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setTripSummary(data);
+    } catch (err) {
+      console.error('Error generating trip summary:', err);
+      setSummaryError('Failed to generate shareable trip summary. Please try again.');
+    } finally {
+      setGeneratingSummary(false);
+    }
+  };
+  
+  // Copy share link to clipboard
+  const copyShareLink = (url) => {
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        alert('Share link copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Failed to copy link:', err);
+      });
   };
 
   if (!destination) {
@@ -1538,19 +1585,14 @@ export default function DestinationDetailsContent() {
                   <FaCalendarAlt className="mr-2" />
                   <span>{getDuration()}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <FacebookShareButton url={typeof window !== 'undefined' ? window.location.href : ''} quote={`Check out my trip to ${destination}!`}>
-                    <FacebookIcon size={32} round />
-                  </FacebookShareButton>
-                  <TwitterShareButton url={typeof window !== 'undefined' ? window.location.href : ''} title={`Check out my trip to ${destination}!`}>
-                    <TwitterIcon size={32} round />
-                  </TwitterShareButton>
-                  <WhatsappShareButton url={typeof window !== 'undefined' ? window.location.href : ''} title={`Check out my trip to ${destination}!`}>
-                    <WhatsappIcon size={32} round />
-                  </WhatsappShareButton>
-                  <EmailShareButton url={typeof window !== 'undefined' ? window.location.href : ''} subject={`Trip to ${destination}`} body={`Check out my trip to ${destination}!`}>
-                    <EmailIcon size={32} round />
-                  </EmailShareButton>
+                <div>
+                  <button 
+                    onClick={() => setShareModalOpen(true)}
+                    className="flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full hover:bg-white/30 transition-colors"
+                  >
+                    <FaShareAlt className="text-white" />
+                    <span className="text-white">Share Trip</span>
+                  </button>
                 </div>
               </motion.div>
             </div>
@@ -1721,6 +1763,159 @@ export default function DestinationDetailsContent() {
           <FaAngleUp className="text-2xl" />
         </motion.button>
       </div>
+      
+      {/* Share Trip Modal */}
+      <Modal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        title="Share Trip Summary"
+      >
+        {!tripSummary && !generatingSummary && !summaryError && (
+          <div className="text-center py-8">
+            <div className="mb-6">
+              <FaShareAlt className="text-4xl text-indigo-500 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Create Shareable Trip Summary</h3>
+              <p className="text-gray-600 mb-6">
+                Generate a beautiful summary page of your trip to {destination} that you can share with friends and family.
+              </p>
+            </div>
+            <button
+              onClick={generateTripSummary}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+            >
+              Generate Trip Summary
+            </button>
+          </div>
+        )}
+        
+        {generatingSummary && (
+          <div className="text-center py-12">
+            <FaSpinner className="animate-spin text-5xl text-indigo-600 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-gray-800 mb-2">Generating Trip Summary</h3>
+            <p className="text-gray-600">
+              Creating a beautiful summary of your trip to {destination}. This may take a moment...
+            </p>
+          </div>
+        )}
+        
+        {summaryError && (
+          <div className="text-center py-8">
+            <div className="mb-6 p-4 bg-red-50 rounded-lg">
+              <FaExclamation className="text-3xl text-red-500 mx-auto mb-3" />
+              <h3 className="text-xl font-semibold text-red-700 mb-2">Error</h3>
+              <p className="text-red-600">{summaryError}</p>
+            </div>
+            <button
+              onClick={() => {
+                setSummaryError(null);
+                generateTripSummary();
+              }}
+              className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+        
+        {tripSummary && (
+          <div className="py-4">
+            <div className="p-5 bg-green-50 rounded-xl mb-6 border border-green-100">
+              <div className="flex items-start">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 flex-shrink-0">
+                  <FaCheck className="text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-green-700 mb-1">Trip Summary Created!</h3>
+                  <p className="text-green-700">
+                    Your trip summary is ready to share.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Share Link
+              </label>
+              <div className="flex">
+                <input
+                  type="text"
+                  readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}${tripSummary.shareUrl}` : ''}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  onClick={() => copyShareLink(`${window.location.origin}${tripSummary.shareUrl}`)}
+                  className="flex items-center justify-center px-4 bg-indigo-600 text-white rounded-r-lg hover:bg-indigo-700 transition-colors"
+                >
+                  <FaCopy />
+                </button>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mb-4">
+              Share directly to:
+            </p>
+            
+            <div className="flex flex-wrap gap-3">
+              <FacebookShareButton 
+                url={typeof window !== 'undefined' ? `${window.location.origin}${tripSummary.shareUrl}` : ''}
+                quote={`Check out my trip to ${destination}!`}
+                className="flex-1"
+              >
+                <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+                  <FacebookIcon size={24} round />
+                  <span>Facebook</span>
+                </div>
+              </FacebookShareButton>
+              
+              <TwitterShareButton 
+                url={typeof window !== 'undefined' ? `${window.location.origin}${tripSummary.shareUrl}` : ''}
+                title={`Check out my trip to ${destination}!`}
+                className="flex-1"
+              >
+                <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-blue-400 text-white hover:bg-blue-500 transition-colors">
+                  <TwitterIcon size={24} round />
+                  <span>Twitter</span>
+                </div>
+              </TwitterShareButton>
+              
+              <WhatsappShareButton 
+                url={typeof window !== 'undefined' ? `${window.location.origin}${tripSummary.shareUrl}` : ''}
+                title={`Check out my trip to ${destination}!`}
+                className="flex-1"
+              >
+                <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition-colors">
+                  <WhatsappIcon size={24} round />
+                  <span>WhatsApp</span>
+                </div>
+              </WhatsappShareButton>
+              
+              <button 
+                onClick={() => copyShareLink(`${window.location.origin}${tripSummary.shareUrl}`)}
+                className="flex-1"
+              >
+                <div className="flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors">
+                  <FaCopy size={24} />
+                  <span>Copy Link</span>
+                </div>
+              </button>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <a
+                href={typeof window !== 'undefined' ? `${window.location.origin}${tripSummary.shareUrl}` : ''}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              >
+                <FaLink />
+                <span>View Shared Trip Page</span>
+              </a>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 } 

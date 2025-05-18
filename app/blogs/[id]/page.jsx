@@ -1,11 +1,11 @@
 'use client';
-import { useEffect } from 'react';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { IoArrowBack } from 'react-icons/io5';
+import { FaEdit, FaTrash } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { use } from 'react';
-import blogData from '../../data/blogs.json';
 
 const ContentBlock = ({ block }) => {
   switch (block.type) {
@@ -24,11 +24,10 @@ const ContentBlock = ({ block }) => {
     case 'image':
       return (
         <div className="relative w-full h-96 mb-8 rounded-xl overflow-hidden">
-          <Image
+          <img
             src={block.url}
             alt={block.caption}
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
             <p className="text-white/90 text-sm">{block.caption}</p>
@@ -63,14 +62,124 @@ const ContentBlock = ({ block }) => {
 };
 
 export default function BlogPost({ params }) {
-  const resolvedParams = use(params);
-  const blog = blogData.blogs.find(b => b.id === resolvedParams.id);
-
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params);
+  const router = useRouter();
+  const [blogId, setBlogId] = useState('');
+  const [blog, setBlog] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAuthor, setIsAuthor] = useState(false);
+  
+  // Initialize blogId from unwrapped params
   useEffect(() => {
+    if (unwrappedParams && unwrappedParams.id) {
+      setBlogId(unwrappedParams.id);
+    }
+  }, [unwrappedParams]);
+  
+  useEffect(() => {
+    // Only proceed if blogId is available
+    if (!blogId) return;
+    
+    const fetchBlog = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = {};
+        
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch(`/api/blogs/${blogId}`, { headers });
+        
+        if (!response.ok) {
+          throw new Error('Blog not found');
+        }
+        
+        const data = await response.json();
+        setBlog(data);
+        
+        // Check if current user is the author
+        if (token) {
+          try {
+            const userResponse = await fetch('/api/auth/me', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (userResponse.ok) {
+              const userData = await userResponse.json();
+              setIsAuthor(userData.user.id === data.author_id);
+            }
+          } catch (error) {
+            console.error('Error checking author status:', error);
+          }
+        }
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchBlog();
     window.scrollTo(0, 0);
-  }, []);
+  }, [blogId]);
 
-  if (!blog) {
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this blog?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+      
+      const response = await fetch(`/api/blogs/${blogId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        router.push('/blogs?mode=my');
+      } else {
+        alert('Failed to delete blog');
+      }
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      alert('An error occurred while deleting the blog');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white pt-24 pb-16">
+        <div className="max-w-4xl mx-auto px-4 md:px-6">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/4 mb-12" />
+            <div className="h-4 bg-gray-200 rounded w-1/3 mb-4" />
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-6" />
+            <div className="h-4 bg-gray-200 rounded w-1/4 mb-8" />
+            <div className="h-96 bg-gray-200 rounded-2xl mb-12" />
+            <div className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-full" />
+              <div className="h-4 bg-gray-200 rounded w-5/6" />
+              <div className="h-4 bg-gray-200 rounded w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !blog) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -90,13 +199,34 @@ export default function BlogPost({ params }) {
     <div className="min-h-screen bg-white pt-24 pb-16">
       {/* Back Button */}
       <div className="max-w-4xl mx-auto px-4 md:px-6 mb-8">
-        <Link 
-          href="/blogs"
-          className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <IoArrowBack />
-          <span>Back to blogs</span>
-        </Link>
+        <div className="flex justify-between items-center">
+          <Link 
+            href="/blogs"
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <IoArrowBack />
+            <span>Back to blogs</span>
+          </Link>
+          
+          {isAuthor && (
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/blogs/edit/${blog.id}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors"
+              >
+                <FaEdit />
+                <span>Edit</span>
+              </Link>
+              <button
+                onClick={handleDelete}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+              >
+                <FaTrash />
+                <span>Delete</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Header */}
@@ -114,7 +244,7 @@ export default function BlogPost({ params }) {
             day: 'numeric' 
           })}</span>
           <span>•</span>
-          <span>{blog.readTime}</span>
+          <span>{blog.read_time}</span>
         </div>
         
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
@@ -123,18 +253,16 @@ export default function BlogPost({ params }) {
         
         <div className="flex items-center gap-4 mb-8">
           <div>
-            <p className="font-medium text-gray-900">{blog.author}</p>
+            <p className="font-medium text-gray-900">{blog.author_name}</p>
           </div>
         </div>
 
         {/* Cover Image */}
         <div className="relative w-full h-[60vh] rounded-2xl overflow-hidden mb-12">
-          <Image
-            src={blog.coverImage}
+          <img
+            src={blog.cover_image}
             alt={blog.title}
-            fill
-            className="object-cover"
-            priority
+            className="w-full h-full object-cover"
           />
         </div>
       </motion.div>

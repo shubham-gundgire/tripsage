@@ -417,29 +417,6 @@ export default function TravelPackagesPage() {
             </div>
           </div>
         </div>
-        
-        {/* Pagination (if needed) */}
-        {!isLoading && !error && packages.length > 0 && (
-          <div className="mt-10 flex justify-center">
-            <nav className="flex items-center space-x-2">
-              <button className="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                Previous
-              </button>
-              <button className="px-3 py-1 rounded-md bg-purple-600 text-white hover:bg-purple-700">
-                1
-              </button>
-              <button className="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                2
-              </button>
-              <button className="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                3
-              </button>
-              <button className="px-3 py-1 rounded-md bg-white border border-gray-300 text-gray-700 hover:bg-gray-50">
-                Next
-              </button>
-            </nav>
-          </div>
-        )}
       </div>
     </div>
   );
