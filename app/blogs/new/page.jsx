@@ -1,9 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { IoArrowBack } from 'react-icons/io5';
-import { FaImage, FaSpinner } from 'react-icons/fa';
+import { FaImage, FaSpinner, FaUpload } from 'react-icons/fa';
 
 // Blog categories
 const BLOG_CATEGORIES = [
@@ -26,8 +26,10 @@ const BLOG_CATEGORIES = [
 
 export default function NewBlogPage() {
   const router = useRouter();
+  const fileInputRef = useRef(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [status, setStatus] = useState(''); // success, error or empty
   
   // Form fields
@@ -40,6 +42,7 @@ export default function NewBlogPage() {
   const [readTime, setReadTime] = useState('5 min read');
   const [content, setContent] = useState('');
   const [isPublished, setIsPublished] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   // Check authentication status
   useEffect(() => {
@@ -148,6 +151,58 @@ export default function NewBlogPage() {
     });
     
     return contentBlocks;
+  };
+  
+  // Handle image upload
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select an image file');
+      return;
+    }
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image size should be less than 5MB');
+      return;
+    }
+    
+    setIsUploading(true);
+    setUploadError('');
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+      
+      const data = await response.json();
+      setCoverImage(data.url);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setUploadError('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  // Trigger file input click
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
   };
   
   // Handle form submission
@@ -305,20 +360,57 @@ export default function NewBlogPage() {
         {/* Cover Image */}
         <div className="mb-6">
           <label htmlFor="coverImage" className="block text-sm font-medium text-gray-700 mb-2">
-            Cover Image URL *
+            Cover Image *
           </label>
-          <div className="flex items-center gap-4">
-            <input
-              id="coverImage"
-              type="url"
-              value={coverImage}
-              onChange={(e) => setCoverImage(e.target.value)}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
-              placeholder="Enter the URL of the cover image"
-              required
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={triggerFileInput}
+                disabled={isUploading}
+                className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md ${
+                  isUploading
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                } transition-colors`}
+              >
+                {isUploading ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <FaUpload />
+                    Upload Image
+                  </>
+                )}
+              </button>
+              
+              <input
+                id="coverImage"
+                type="url"
+                value={coverImage}
+                onChange={(e) => setCoverImage(e.target.value)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500"
+                placeholder="Or enter image URL directly"
+                required
+              />
+            </div>
+            
+            {uploadError && (
+              <p className="text-sm text-red-600">{uploadError}</p>
+            )}
+            
             {coverImage && (
-              <div className="relative w-16 h-16 rounded-md overflow-hidden border border-gray-200">
+              <div className="relative w-full h-48 rounded-md overflow-hidden border border-gray-200">
                 <img
                   src={coverImage}
                   alt="Cover preview"
@@ -327,13 +419,16 @@ export default function NewBlogPage() {
               </div>
             )}
             {!coverImage && (
-              <div className="w-16 h-16 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md border border-gray-200">
-                <FaImage className="text-xl" />
+              <div className="w-full h-48 flex items-center justify-center bg-gray-100 text-gray-400 rounded-md border border-gray-200">
+                <div className="flex flex-col items-center">
+                  <FaImage className="text-4xl mb-2" />
+                  <p>No image selected</p>
+                </div>
               </div>
             )}
           </div>
           <p className="mt-1 text-sm text-gray-500">
-            Provide a URL to an image. Recommended size: 1200×800 pixels.
+            Upload an image or provide a URL. Recommended size: 1200×800 pixels.
           </p>
         </div>
         
